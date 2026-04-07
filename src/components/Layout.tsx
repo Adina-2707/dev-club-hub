@@ -2,18 +2,25 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useData } from "@/contexts/DataContext";
 import { RoleBadge } from "./RoleBadge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Menu, X, LogOut, User, Moon, Sun, Globe } from "lucide-react";
+import { Menu, X, LogOut, User, Moon, Sun, Globe, Bell } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout, isAuthenticated } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useLanguage();
+  const { notifications, markNotificationAsRead, markAllNotificationsAsRead } = useData();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const userNotifications = notifications.filter(n => n.userId === user?.id);
+  const unreadCount = userNotifications.filter(n => !n.read).length;
 
   const navItems = [
     { label: t("nav.home"), path: "/" },
@@ -76,6 +83,52 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
+
+            {/* Notifications */}
+            {isAuthenticated && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all">
+                    <Bell className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Badge>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="end">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{t("notifications.title")}</h3>
+                      {unreadCount > 0 && (
+                        <Button variant="ghost" size="sm" onClick={markAllNotificationsAsRead}>
+                          {t("notifications.markAllRead")}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {userNotifications.length === 0 ? (
+                      <div className="p-4 text-center text-muted-foreground">
+                        {t("notifications.empty")}
+                      </div>
+                    ) : (
+                      userNotifications.slice(0, 10).map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
+                          onClick={() => markNotificationAsRead(notification.id)}
+                        >
+                          <p className="text-sm">{notification.message}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{notification.createdAt}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
 
             {isAuthenticated && user ? (
               <div className="flex items-center gap-2.5 ml-1">

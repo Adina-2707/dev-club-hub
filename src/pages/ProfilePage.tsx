@@ -8,16 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/EmptyState";
 import { Navigate } from "react-router-dom";
-import { User, Code2, Users, Briefcase, BookOpen, MessageCircle, Github, ExternalLink, Heart, Bookmark, Send, Edit, Save, X } from "lucide-react";
+import { User, Code2, Users, Briefcase, BookOpen, MessageCircle, Github, ExternalLink, Heart, Bookmark, Send, Edit, Save, X, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ProfilePage() {
   const { user, isAuthenticated, updateUser } = useAuth();
-  const { projects, teams, internships, blogPosts, comments, addComment, applications } = useData();
+  const { projects, teams, internships, blogPosts, comments, addComment, applications, updateApplicationStatus, updateInternship, deleteInternship, updateBlogPost, deleteBlogPost } = useData();
   const { t } = useLanguage();
   const [commentText, setCommentText] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editNickname, setEditNickname] = useState(user?.nickname || "");
   const [editAvatar, setEditAvatar] = useState(user?.avatar || "");
+  const [editingInternship, setEditingInternship] = useState<string | null>(null);
+  const [editInternshipTitle, setEditInternshipTitle] = useState("");
+  const [editInternshipDesc, setEditInternshipDesc] = useState("");
+  const [editingBlogPost, setEditingBlogPost] = useState<string | null>(null);
+  const [editBlogTitle, setEditBlogTitle] = useState("");
+  const [editBlogContent, setEditBlogContent] = useState("");
 
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
 
@@ -43,11 +50,46 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  const handleEditInternship = (internship: any) => {
+    setEditingInternship(internship.id);
+    setEditInternshipTitle(internship.title);
+    setEditInternshipDesc(internship.description);
+  };
+
+  const handleSaveInternship = () => {
+    if (editingInternship) {
+      updateInternship(editingInternship, { title: editInternshipTitle, description: editInternshipDesc });
+      setEditingInternship(null);
+    }
+  };
+
+  const handleCancelInternshipEdit = () => {
+    setEditingInternship(null);
+  };
+
+  const handleEditBlogPost = (blogPost: any) => {
+    setEditingBlogPost(blogPost.id);
+    setEditBlogTitle(blogPost.title);
+    setEditBlogContent(blogPost.content);
+  };
+
+  const handleSaveBlogPost = () => {
+    if (editingBlogPost) {
+      updateBlogPost(editingBlogPost, { title: editBlogTitle, content: editBlogContent });
+      setEditingBlogPost(null);
+    }
+  };
+
+  const handleCancelBlogPostEdit = () => {
+    setEditingBlogPost(null);
+  };
+
   const myProjects = projects.filter((p) => p.authorId === user.id);
   const myTeams = teams.filter((t) => t.members.some((m) => m.id === user.id));
   const myInternships = internships.filter((i) => i.authorId === user.id);
   const myBlogPosts = blogPosts.filter((b) => b.authorId === user.id);
   const myComments = comments.filter((c) => c.authorId === user.id);
+  const mentorApplications = applications.filter((app) => internships.some((i) => i.id === app.internshipId && i.authorId === user.id));
   const savedProjects = projects.filter((p) => p.bookmarks.includes(user.id));
   const myApplications = applications.filter((a) => a.studentId === user.id);
 
@@ -221,7 +263,47 @@ export default function ProfilePage() {
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
                 {myInternships.map((i) => (
-                  <Card key={i.id} className="card-hover rounded-2xl"><CardHeader><CardTitle className="text-lg">{i.title}</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">{i.description}</p></CardContent></Card>
+                  <Card key={i.id} className="card-hover rounded-2xl">
+                    {editingInternship === i.id ? (
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Edit className="h-5 w-5" /> {t("profile.editInternship")}
+                        </CardTitle>
+                      </CardHeader>
+                    ) : (
+                      <CardHeader>
+                        <CardTitle className="text-lg">{i.title}</CardTitle>
+                      </CardHeader>
+                    )}
+                    <CardContent>
+                      {editingInternship === i.id ? (
+                        <div className="space-y-4">
+                          <Input value={editInternshipTitle} onChange={(e) => setEditInternshipTitle(e.target.value)} placeholder={t("internships.titleField")} />
+                          <Textarea value={editInternshipDesc} onChange={(e) => setEditInternshipDesc(e.target.value)} placeholder={t("internships.description")} rows={3} />
+                          <div className="flex gap-2">
+                            <Button onClick={handleSaveInternship} size="sm" className="gap-2">
+                              <Save className="h-4 w-4" /> {t("profile.save")}
+                            </Button>
+                            <Button onClick={handleCancelInternshipEdit} variant="outline" size="sm" className="gap-2">
+                              <X className="h-4 w-4" /> {t("profile.cancel")}
+                            </Button>
+                            <Button onClick={() => deleteInternship(i.id)} variant="destructive" size="sm" className="gap-2 ml-auto">
+                              <X className="h-4 w-4" /> {t("profile.delete")}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm text-muted-foreground">{i.description}</p>
+                          <div className="flex gap-2 mt-3">
+                            <Button onClick={() => handleEditInternship(i)} variant="outline" size="sm" className="gap-2">
+                              <Edit className="h-4 w-4" /> {t("profile.edit")}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -234,8 +316,98 @@ export default function ProfilePage() {
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
                 {myBlogPosts.map((b) => (
-                  <Card key={b.id} className="card-hover rounded-2xl"><CardHeader><CardTitle className="text-lg">{b.title}</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground line-clamp-3">{b.content}</p></CardContent></Card>
+                  <Card key={b.id} className="card-hover rounded-2xl">
+                    {editingBlogPost === b.id ? (
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Edit className="h-5 w-5" /> {t("profile.editBlogPost")}
+                        </CardTitle>
+                      </CardHeader>
+                    ) : (
+                      <CardHeader>
+                        <CardTitle className="text-lg">{b.title}</CardTitle>
+                      </CardHeader>
+                    )}
+                    <CardContent>
+                      {editingBlogPost === b.id ? (
+                        <div className="space-y-4">
+                          <Input value={editBlogTitle} onChange={(e) => setEditBlogTitle(e.target.value)} placeholder={t("blog.titleField")} />
+                          <Textarea value={editBlogContent} onChange={(e) => setEditBlogContent(e.target.value)} placeholder={t("blog.content")} rows={5} />
+                          <div className="flex gap-2">
+                            <Button onClick={handleSaveBlogPost} size="sm" className="gap-2">
+                              <Save className="h-4 w-4" /> {t("profile.save")}
+                            </Button>
+                            <Button onClick={handleCancelBlogPostEdit} variant="outline" size="sm" className="gap-2">
+                              <X className="h-4 w-4" /> {t("profile.cancel")}
+                            </Button>
+                            <Button onClick={() => deleteBlogPost(b.id)} variant="destructive" size="sm" className="gap-2 ml-auto">
+                              <X className="h-4 w-4" /> {t("profile.delete")}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm text-muted-foreground line-clamp-3">{b.content}</p>
+                          <div className="flex gap-2 mt-3">
+                            <Button onClick={() => handleEditBlogPost(b)} variant="outline" size="sm" className="gap-2">
+                              <Edit className="h-4 w-4" /> {t("profile.edit")}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
                 ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2 mb-5"><CheckCircle className="h-5 w-5 text-primary" /> {t("profile.internshipApplications")}</h2>
+            {mentorApplications.length === 0 ? (
+              <EmptyState title={t("profile.noApplications")} description={t("profile.noApplicationsMentor")} />
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {mentorApplications.map((app) => {
+                  const internship = internships.find(i => i.id === app.internshipId);
+                  const student = { id: app.studentId, name: "Student Name" }; // Mock, in real app get from users
+                  return (
+                    <Card key={app.id} className="card-hover rounded-2xl">
+                      <CardHeader>
+                        <CardTitle className="text-lg">{internship?.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">Applicant: {student.name}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-3">{app.message || t("profile.noMessage")}</p>
+                        <div className="flex items-center justify-between">
+                          <Select value={app.status} onValueChange={(value: "pending" | "accepted" | "rejected") => updateApplicationStatus(app.id, value)}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="h-3 w-3" /> {t("profile.pending")}
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="accepted">
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="h-3 w-3" /> {t("profile.accepted")}
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="rejected">
+                                <div className="flex items-center gap-2">
+                                  <XCircle className="h-3 w-3" /> {t("profile.rejected")}
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span className="text-xs text-muted-foreground">{app.createdAt}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>

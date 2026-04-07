@@ -117,6 +117,7 @@ const translations = {
   "internships.applyTitle": { ru: "Подать заявку на стажировку", en: "Apply for Internship" },
   "internships.coverLetter": { ru: "Сопроводительное письмо (необязательно)", en: "Cover letter (optional)" },
   "internships.submitApplication": { ru: "Отправить заявку", en: "Submit Application" },
+  "internships.description": { ru: "Описание стажировки", en: "Internship description" },
 
   // Teams
   "teams.title": { ru: "Команды", en: "Teams" },
@@ -166,6 +167,12 @@ const translations = {
   "profile.pending": { ru: "Ожидает", en: "Pending" },
   "profile.accepted": { ru: "Принята", en: "Accepted" },
   "profile.rejected": { ru: "Отклонена", en: "Rejected" },
+  "profile.internshipApplications": { ru: "Заявки на стажировки", en: "Internship Applications" },
+  "profile.noApplicationsMentor": { ru: "Пока нет заявок на ваши стажировки.", en: "No applications for your internships yet." },
+  "profile.editInternship": { ru: "Редактировать стажировку", en: "Edit Internship" },
+  "profile.editBlogPost": { ru: "Редактировать запись", en: "Edit Blog Post" },
+  "profile.edit": { ru: "Редактировать", en: "Edit" },
+  "profile.delete": { ru: "Удалить", en: "Delete" },
 
   // Access Denied
   "access.denied": { ru: "Доступ запрещён", en: "Access Denied" },
@@ -176,11 +183,14 @@ const translations = {
   "notFound.title": { ru: "Страница не найдена", en: "Oops! Page not found" },
   "notFound.back": { ru: "Вернуться на главную", en: "Return to Home" },
 
+  // Notifications
+  "notifications.title": { ru: "Уведомления", en: "Notifications" },
+  "notifications.empty": { ru: "Нет уведомлений", en: "No notifications" },
+  "notifications.markAllRead": { ru: "Отметить все прочитанными", en: "Mark all as read" },
+
   // Footer
   "footer.text": { ru: "© 2024 Dev Club. Создано разработчиками для разработчиков.", en: "© 2024 Dev Club. Built for developers, by developers." },
 } as const;
-
-type TranslationKey = keyof typeof translations;
 
 interface LanguageContextType {
   lang: Lang;
