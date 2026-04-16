@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 215 16% 47%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 221 83% 53%;
+
+    --surface: 210 40% 98%;
+    --surface-foreground: 222 47% 11%;
+    --badge-student: 221 83% 53%;
+    --badge-mentor: 160 64% 43%;
+    --badge-alumni: 262 83% 58%;
+
+    --gradient-start: 221 83% 53%;
+    --gradient-mid: 262 83% 58%;
+    --gradient-end: 187 85% 53%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
+
+    --surface: 222 47% 11%;
+    --surface-foreground: 210 40% 98%;
+    --badge-student: 217 91% 60%;
+    --badge-mentor: 160 64% 43%;
+    --badge-alumni: 262 83% 58%;
+
+    --gradient-start: 217 91% 60%;
+    --gradient-mid: 262 83% 58%;
+    --gradient-end: 187 85% 53%;
+
+    --sidebar-background: 222 47% 9%;
+    --sidebar-foreground: 215 20% 65%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .hero-gradient {
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-mid)), hsl(var(--gradient-end)));
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-mid)), hsl(var(--gradient-end)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gradient-border {
+    border-image: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-mid))) 1;
+  }
+  .gradient-btn {
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-mid)));
+    transition: all 0.3s ease;
+  }
+  .gradient-btn:hover {
+    background: linear-gradient(135deg, hsl(var(--gradient-mid)), hsl(var(--gradient-start)));
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px -8px hsl(var(--gradient-start) / 0.4);
+  }
+  .glass-card {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  .slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+  .badge-student {
+    background-color: hsl(var(--badge-student) / 0.15);
+    color: hsl(var(--badge-student));
+  }
+  .badge-mentor {
+    background-color: hsl(var(--badge-mentor) / 0.15);
+    color: hsl(var(--badge-mentor));
+  }
+  .badge-alumni {
+    background-color: hsl(var(--badge-alumni) / 0.15);
+    color: hsl(var(--badge-alumni));
+  }
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px hsl(var(--primary) / 0.15);
+  }
+  .glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

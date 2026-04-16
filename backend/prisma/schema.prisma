@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   // "student" | "mentor" | "alumni"
+  avatar    String?
+  nickname  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projects         Project[]
+  teamsOwned       Team[]           @relation("TeamOwner")
+  teamMemberships  TeamMember[]
+  blogPosts        BlogPost[]
+  internships      Internship[]
+  comments         Comment[]
+  likes            Like[]
+  bookmarks        Bookmark[]
+  applications     InternshipApplication[]
+  notifications    Notification[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  githubLink  String
+  authorId    String
+  authorName  String
+  teamId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  team     Team?     @relation(fields: [teamId], references: [id])
+  likes    Like[]
+  bookmarks Bookmark[]
+}
+
+model Team {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  goals       String?
+  category    String?
+  visibility  String     // "public" | "private"
+  ownerId     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  owner    User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members  TeamMember[]
+  projects Project[]
+}
+
+model TeamMember {
+  id     String   @id @default(cuid())
+  teamId String
+  userId String
+  name   String
+  role   String   // "leader" | "member"
+  joinedAt DateTime @default(now())
+
+  // Relations
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  authorId  String
+  authorName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Internship {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  authorId    String
+  authorName  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  applications InternshipApplication[]
+}
+
+model InternshipApplication {
+  id           String   @id @default(cuid())
+  studentId    String
+  internshipId String
+  status       String   @default("pending") // "pending" | "accepted" | "rejected"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  internship Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, internshipId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  text       String
+  authorId   String
+  authorName String
+  targetId   String
+  targetType String   // "project" or "blog"
+  createdAt  DateTime @default(now())
+
+  // Relations
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model Bookmark {
+  id        String @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "like" | "comment" | "application_status" | "team_invite"
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  relatedId String?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
