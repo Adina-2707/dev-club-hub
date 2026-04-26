@@ -189,7 +189,7 @@ const translations = {
   "notifications.markAllRead": { ru: "Отметить все прочитанными", en: "Mark all as read" },
 
   // Footer
-  "footer.text": { ru: "© 2024 Dev Club. Создано разработчиками для разработчиков.", en: "© 2024 Dev Club. Built for developers, by developers." },
+  "footer.text": { ru: "© 2026 Dev Club. Создано разработчиками для разработчиков.", en: "© 2026 Dev Club. Built for developers, by developers." },
 } as const;
 
 interface LanguageContextType {
