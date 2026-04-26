@@ -44,6 +44,13 @@ export interface Internship {
 }
 
 export interface InternshipApplication {
+  id: string;
+  studentId: string;
+  internshipId: string;
+  message?: string;
+  status: "pending" | "accepted" | "rejected";
+  createdAt: string;
+}
 
 export interface Comment {
   id: string;
