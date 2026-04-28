@@ -104,169 +104,148 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | null>(null);
 
+const sampleProjects: Project[] = [
+  { id: "p1", title: "TaskFlow App", description: "A modern task management application with drag-and-drop support.", githubLink: "https://github.com/demo/taskflow", authorId: "1", authorName: "Demo Student", likes: ["3"], bookmarks: [], createdAt: "2024-03-15" },
+  { id: "p2", title: "DevChat", description: "Real-time chat application for developer teams.", githubLink: "https://github.com/demo/devchat", authorId: "1", authorName: "Demo Student", likes: ["2", "3"], bookmarks: ["3"], createdAt: "2024-03-10" },
+];
+
+const sampleBlogPosts: BlogPost[] = [
+  { id: "b1", title: "Getting Started with React", content: "React is a powerful library for building user interfaces. In this post, we'll explore the fundamentals of React including components, state, and props. Whether you're just starting out or looking to refresh your knowledge, this guide will help you understand the core concepts that make React so popular among developers.", authorId: "2", authorName: "Demo Mentor", createdAt: "2024-03-12" },
+];
+
+const sampleInternships: Internship[] = [
+  { id: "i1", title: "Frontend Developer Intern", description: "Join our team to work on cutting-edge React applications. You'll learn best practices in modern web development.", authorId: "2", authorName: "Demo Mentor", createdAt: "2024-03-14" },
+];
+
+const sampleComments: Comment[] = [
+  { id: "c1", text: "Отличный проект! Очень впечатляет.", authorId: "3", authorName: "Demo Alumni", targetId: "p1", targetType: "project", createdAt: "2024-03-16" },
+];
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>(sampleProjects);
   const [teams, setTeams] = useState<Team[]>([]);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [internships, setInternships] = useState<Internship[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(sampleBlogPosts);
+  const [internships, setInternships] = useState<Internship[]>(sampleInternships);
+  const [comments, setComments] = useState<Comment[]>(sampleComments);
   const [applications, setApplications] = useState<InternshipApplication[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const [projectsData, teamsData, blogPostsData, internshipsData, commentsData] = await Promise.all([
-          apiService.getProjects(),
-          apiService.getTeams(),
-          apiService.getBlogPosts(),
-          apiService.getInternships(),
-          apiService.getAllComments(),
-        ]);
+  const addProject = (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) =>
+    setProjects((prev) => [...prev, { ...p, id: `p${Date.now()}`, likes: [], bookmarks: [], createdAt: new Date().toISOString().split("T")[0] }]);
 
-        setProjects(projectsData as Project[]);
-        setTeams(teamsData as Team[]);
-        setBlogPosts(blogPostsData as BlogPost[]);
-        setInternships(internshipsData as Internship[]);
-        setComments((commentsData as any[]).map((comment) => ({
-          ...comment,
-          authorName: comment.authorName || comment.author?.name,
-        })));
+  const addTeam = (t: Omit<Team, "id" | "createdAt">) =>
+    setTeams((prev) => [...prev, { ...t, id: `t${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
 
-        try {
-          const notificationsData = await apiService.getNotifications();
-          setNotifications(notificationsData as Notification[]);
-        } catch {
-          setNotifications([]);
-        }
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        }
-      } finally {
-        setIsLoading(false);
+  const joinTeam = (teamId: string, member: { id: string; name: string }) =>
+    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: [...t.members, { ...member, role: "member" }] } : t)));
+
+  const leaveTeam = (teamId: string, memberId: string) =>
+    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t)));
+
+  const updateTeamMemberRole = (teamId: string, memberId: string, role: "leader" | "member") =>
+    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.map((m) => (m.id === memberId ? { ...m, role } : m)) } : t)));
+
+  const addInternshipApplication = (a: Omit<InternshipApplication, "id" | "createdAt">) =>
+    setApplications((prev) => [...prev, { ...a, id: `a${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+
+  const updateApplicationStatus = (applicationId: string, status: "pending" | "accepted" | "rejected") =>
+    setApplications((prev) => prev.map((app) => {
+      if (app.id === applicationId && app.status !== status) {
+        // Add notification to student
+        addNotification({
+          userId: app.studentId,
+          type: "application_status",
+          message: `Your internship application status has been updated to ${status}`,
+          read: false,
+          relatedId: applicationId
+        });
       }
-    };
-
-    loadInitialData();
-  }, []);
-
-  const addProject = async (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) => {
-    const created = await apiService.createProject(p);
-    setProjects((prev) => [created as Project, ...prev]);
-  };
-
-  const addTeam = async (t: Omit<Team, "id" | "createdAt">) => {
-    const created = await apiService.createTeam(t);
-    setTeams((prev) => [created as Team, ...prev]);
-  };
-
-  const joinTeam = async (teamId: string, member: { id: string; name: string }) => {
-    await apiService.joinTeam(teamId, member);
-    setTeams((prev) => prev.map((team) => {
-      if (team.id !== teamId) return team;
-      if (team.members.some((m) => m.id === member.id)) return team;
-      return { ...team, members: [...team.members, { id: member.id, name: member.name, role: "member" }] };
+      return app.id === applicationId ? { ...app, status } : app;
     }));
-  };
 
-  const leaveTeam = async (teamId: string, memberId: string) => {
-    await apiService.leaveTeam(teamId);
-    setTeams((prev) => prev.map((team) => {
-      if (team.id !== teamId) return team;
-      return { ...team, members: team.members.filter((m) => m.id !== memberId) };
+  const addBlogPost = (b: Omit<BlogPost, "id" | "createdAt">) =>
+    setBlogPosts((prev) => [...prev, { ...b, id: `b${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+
+  const addInternship = (i: Omit<Internship, "id" | "createdAt">) =>
+    setInternships((prev) => [...prev, { ...i, id: `i${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+
+  const updateInternship = (id: string, updates: Partial<Pick<Internship, "title" | "description">>) =>
+    setInternships((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));
+
+  const deleteInternship = (id: string) =>
+    setInternships((prev) => prev.filter((i) => i.id !== id));
+
+  const updateBlogPost = (id: string, updates: Partial<Pick<BlogPost, "title" | "content">>) =>
+    setBlogPosts((prev) => prev.map((b) => (b.id === id ? { ...b, ...updates } : b)));
+
+  const deleteBlogPost = (id: string) =>
+    setBlogPosts((prev) => prev.filter((b) => b.id !== id));
+
+  const addComment = (c: Omit<Comment, "id" | "createdAt">) =>
+    setComments((prev) => {
+      const newComment = { ...c, id: `c${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] };
+      // Add notification to project/blog author
+      if (c.targetType === "project") {
+        const project = projects.find(p => p.id === c.targetId);
+        if (project && project.authorId !== c.authorId) {
+          addNotification({
+            userId: project.authorId,
+            type: "comment",
+            message: `New comment on your project "${project.title}"`,
+            read: false,
+            relatedId: c.targetId
+          });
+        }
+      } else if (c.targetType === "blog") {
+        const blogPost = blogPosts.find(b => b.id === c.targetId);
+        if (blogPost && blogPost.authorId !== c.authorId) {
+          addNotification({
+            userId: blogPost.authorId,
+            type: "comment",
+            message: `New comment on your blog post "${blogPost.title}"`,
+            read: false,
+            relatedId: c.targetId
+          });
+        }
+      }
+      return [...prev, newComment];
+    });
+
+  const deleteComment = (id: string) =>
+    setComments((prev) => prev.filter((c) => c.id !== id));
+
+  const toggleLike = (projectId: string, userId: string) =>
+    setProjects((prev) => prev.map((p) => {
+      if (p.id !== projectId) return p;
+      const liked = p.likes.includes(userId);
+      if (!liked) {
+        // Add notification to project author
+        addNotification({
+          userId: p.authorId,
+          type: "like",
+          message: `Your project "${p.title}" was liked`,
+          read: false,
+          relatedId: projectId
+        });
+      }
+      return { ...p, likes: liked ? p.likes.filter((id) => id !== userId) : [...p.likes, userId] };
     }));
-  };
 
-  const updateTeamMemberRole = async (teamId: string, memberId: string, role: "leader" | "member") => {
-    await apiService.updateTeam(teamId, { role });
-    setTeams((prev) => prev.map((team) => {
-      if (team.id !== teamId) return team;
-      return {
-        ...team,
-        members: team.members.map((m) => (m.id === memberId ? { ...m, role } : m)),
-      };
+  const toggleBookmark = (projectId: string, userId: string) =>
+    setProjects((prev) => prev.map((p) => {
+      if (p.id !== projectId) return p;
+      const bookmarked = p.bookmarks.includes(userId);
+      return { ...p, bookmarks: bookmarked ? p.bookmarks.filter((id) => id !== userId) : [...p.bookmarks, userId] };
     }));
-  };
-
-  const addBlogPost = async (b: Omit<BlogPost, "id" | "createdAt">) => {
-    const created = await apiService.createBlogPost(b);
-    setBlogPosts((prev) => [created as BlogPost, ...prev]);
-  };
-
-  const updateBlogPost = async (id: string, updates: Partial<Pick<BlogPost, "title" | "content">>) => {
-    const updated = await apiService.updateBlogPost(id, updates);
-    setBlogPosts((prev) => prev.map((post) => (post.id === id ? { ...post, ...(updated as Partial<BlogPost>) } : post)));
-  };
-
-  const deleteBlogPost = async (id: string) => {
-    await apiService.deleteBlogPost(id);
-    setBlogPosts((prev) => prev.filter((post) => post.id !== id));
-  };
-
-  const addInternship = async (i: Omit<Internship, "id" | "createdAt">) => {
-    const created = await apiService.createInternship(i);
-    setInternships((prev) => [created as Internship, ...prev]);
-  };
-
-  const updateInternship = async (id: string, updates: Partial<Pick<Internship, "title" | "description">>) => {
-    const updated = await apiService.updateInternship(id, updates);
-    setInternships((prev) => prev.map((internship) => (internship.id === id ? { ...internship, ...(updated as Partial<Internship>) } : internship)));
-  };
-
-  const deleteInternship = async (id: string) => {
-    await apiService.deleteInternship(id);
-    setInternships((prev) => prev.filter((internship) => internship.id !== id));
-  };
-
-  const addInternshipApplication = async (a: Omit<InternshipApplication, "id" | "createdAt">) => {
-    const created = await apiService.applyInternship({ internshipId: a.internshipId });
-    setApplications((prev) => [created as InternshipApplication, ...prev]);
-  };
-
-  const updateApplicationStatus = async (applicationId: string, status: "pending" | "accepted" | "rejected") => {
-    const updated = await apiService.updateApplicationStatus(applicationId, status);
-    setApplications((prev) => prev.map((app) => (app.id === applicationId ? { ...app, ...(updated as Partial<InternshipApplication>) } : app)));
-  };
-
-  const addComment = async (c: Omit<Comment, "id" | "createdAt">) => {
-    const created = await apiService.createComment(c);
-    const comment = {
-      ...(created as any),
-      authorName: (created as any).authorName || (created as any).author?.name,
-    } as Comment;
-    setComments((prev) => [comment, ...prev]);
-  };
-
-  const deleteComment = async (id: string) => {
-    await apiService.deleteComment(id);
-    setComments((prev) => prev.filter((comment) => comment.id !== id));
-  };
-
-  const toggleLike = async (projectId: string, userId: string) => {
-    const likes = await apiService.likeProject(projectId);
-    setProjects((prev) => prev.map((project) => project.id === projectId ? { ...project, likes: likes as string[] } : project));
-  };
-
-  const toggleBookmark = async (projectId: string, userId: string) => {
-    const bookmarks = await apiService.bookmarkProject(projectId);
-    setProjects((prev) => prev.map((project) => project.id === projectId ? { ...project, bookmarks: bookmarks as string[] } : project));
-  };
 
   const addNotification = (n: Omit<Notification, "id" | "createdAt">) =>
-    setNotifications((prev) => [{ ...n, id: `n${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }, ...prev]);
+    setNotifications((prev) => [...prev, { ...n, id: `n${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
 
-  const markNotificationAsRead = async (id: string) => {
-    const updated = await apiService.markNotificationAsRead(id);
-    setNotifications((prev) => prev.map((notification) => notification.id === id ? { ...notification, ...(updated as Partial<Notification>) } : notification));
-  };
+  const markNotificationAsRead = (id: string) =>
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
 
-  const markAllNotificationsAsRead = async () => {
-    await apiService.markAllNotificationsAsRead();
-    setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
-  };
+  const markAllNotificationsAsRead = () =>
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 
   return (
     <DataContext.Provider value={{ projects, teams, blogPosts, internships, comments, applications, notifications, addProject, addTeam, joinTeam, leaveTeam, updateTeamMemberRole, addBlogPost, updateBlogPost, deleteBlogPost, addInternship, updateInternship, deleteInternship, addInternshipApplication, updateApplicationStatus, addComment, deleteComment, toggleLike, toggleBookmark, addNotification, markNotificationAsRead, markAllNotificationsAsRead }}>

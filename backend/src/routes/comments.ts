@@ -12,18 +12,21 @@ const createCommentSchema = z.object({
   targetType: z.enum(['project', 'blog']),
 });
 
-// Get comments for a target or all comments
+// Get comments for a target
 router.get('/', async (req, res) => {
   try {
-    const targetId = typeof req.query.targetId === 'string' ? req.query.targetId : undefined;
-    const targetType = typeof req.query.targetType === 'string' ? req.query.targetType : undefined;
+    const targetId = typeof req.query.targetId === 'string' ? req.query.targetId : '';
+    const targetType = typeof req.query.targetType === 'string' ? req.query.targetType : '';
 
-    const where: any = {};
-    if (targetId) where.targetId = targetId;
-    if (targetType) where.targetType = targetType;
+    if (!targetId || !targetType) {
+      return res.status(400).json({ error: 'targetId and targetType are required' });
+    }
 
     const comments = await prisma.comment.findMany({
-      where,
+      where: {
+        targetId,
+        targetType: targetType as 'project' | 'blog',
+      },
       include: {
         author: {
           select: { id: true, name: true, avatar: true },

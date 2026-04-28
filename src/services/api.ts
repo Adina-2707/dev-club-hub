@@ -207,16 +207,12 @@ class ApiService {
   }
 
   async updateApplicationStatus(id: string, status: string) {
-    return this.request(`/internships/applications/${id}`, 'PUT', { status });
+    return this.request(`/internships/applications/${id}/status`, 'PUT', { status });
   }
 
   // Comments endpoints
   async getComments(targetId: string, targetType: 'project' | 'blog') {
     return this.request(`/comments?targetId=${targetId}&targetType=${targetType}`, 'GET');
-  }
-
-  async getAllComments() {
-    return this.request('/comments', 'GET');
   }
 
   async createComment(data: any) {
@@ -234,10 +230,6 @@ class ApiService {
 
   async markNotificationAsRead(id: string) {
     return this.request(`/notifications/${id}/read`, 'PUT');
-  }
-
-  async markAllNotificationsAsRead() {
-    return this.request('/notifications/read-all', 'PUT');
   }
 
   // Health check
