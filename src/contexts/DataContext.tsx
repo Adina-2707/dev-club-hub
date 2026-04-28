@@ -136,6 +136,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addTeam = (t: Omit<Team, "id" | "createdAt">) =>
     setTeams((prev) => [...prev, { ...t, id: `t${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
 
+  const joinTeam = (teamId: string, member: { id: string; name: string }) =>
+    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: [...t.members, { ...member, role: "member" }] } : t)));
+
   const leaveTeam = (teamId: string, memberId: string) =>
     setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t)));
 
