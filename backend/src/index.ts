@@ -47,9 +47,10 @@ app.get('/api/health', (req, res) => {
 });
 
 // Error handling
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const message = err instanceof Error ? err.message : 'Something went wrong!';
+  console.error(err);
+  res.status(500).json({ error: message });
 });
 
 app.listen(PORT, () => {

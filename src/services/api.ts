@@ -37,7 +37,7 @@ class ApiService {
   private async request<T>(
     endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-    body?: any
+    body?: Record<string, unknown>
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers: HeadersInit = {
@@ -98,7 +98,7 @@ class ApiService {
     return this.request('/auth/me', 'GET');
   }
 
-  async updateUser(updates: any) {
+  async updateUser(updates: Record<string, unknown>) {
     return this.request('/auth/me', 'PUT', updates);
   }
 
@@ -111,11 +111,11 @@ class ApiService {
     return this.request(`/projects/${id}`, 'GET');
   }
 
-  async createProject(data: any) {
+  async createProject(data: Record<string, unknown>) {
     return this.request('/projects', 'POST', data);
   }
 
-  async updateProject(id: string, data: any) {
+  async updateProject(id: string, data: Record<string, unknown>) {
     return this.request(`/projects/${id}`, 'PUT', data);
   }
 
@@ -140,11 +140,11 @@ class ApiService {
     return this.request(`/teams/${id}`, 'GET');
   }
 
-  async createTeam(data: any) {
+  async createTeam(data: Record<string, unknown>) {
     return this.request('/teams', 'POST', data);
   }
 
-  async updateTeam(id: string, data: any) {
+  async updateTeam(id: string, data: Record<string, unknown>) {
     return this.request(`/teams/${id}`, 'PUT', data);
   }
 
@@ -152,7 +152,7 @@ class ApiService {
     return this.request(`/teams/${id}`, 'DELETE');
   }
 
-  async joinTeam(id: string, data: any) {
+  async joinTeam(id: string, data: Record<string, unknown>) {
     return this.request(`/teams/${id}/join`, 'POST', data);
   }
 
@@ -169,11 +169,11 @@ class ApiService {
     return this.request(`/blog/${id}`, 'GET');
   }
 
-  async createBlogPost(data: any) {
+  async createBlogPost(data: Record<string, unknown>) {
     return this.request('/blog', 'POST', data);
   }
 
-  async updateBlogPost(id: string, data: any) {
+  async updateBlogPost(id: string, data: Record<string, unknown>) {
     return this.request(`/blog/${id}`, 'PUT', data);
   }
 
@@ -190,11 +190,11 @@ class ApiService {
     return this.request(`/internships/${id}`, 'GET');
   }
 
-  async createInternship(data: any) {
+  async createInternship(data: Record<string, unknown>) {
     return this.request('/internships', 'POST', data);
   }
 
-  async updateInternship(id: string, data: any) {
+  async updateInternship(id: string, data: Record<string, unknown>) {
     return this.request(`/internships/${id}`, 'PUT', data);
   }
 
@@ -202,7 +202,7 @@ class ApiService {
     return this.request(`/internships/${id}`, 'DELETE');
   }
 
-  async applyInternship(data: any) {
+  async applyInternship(data: Record<string, unknown>) {
     return this.request('/internships/apply', 'POST', data);
   }
 
@@ -215,7 +215,7 @@ class ApiService {
     return this.request(`/comments?targetId=${targetId}&targetType=${targetType}`, 'GET');
   }
 
-  async createComment(data: any) {
+  async createComment(data: Record<string, unknown>) {
     return this.request('/comments', 'POST', data);
   }
 
