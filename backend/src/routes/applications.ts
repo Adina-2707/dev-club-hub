@@ -23,6 +23,7 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
 
     const internship = await prisma.internship.findUnique({
       where: { id: internshipId },
+      select: { id: true, title: true, authorId: true },
     });
 
     if (!internship) {
@@ -53,6 +54,17 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
         },
       },
     });
+
+    if (internship.authorId !== studentId) {
+      await prisma.notification.create({
+        data: {
+          userId: internship.authorId,
+          type: 'application',
+          message: `New application for your internship "${internship.title}"`,
+          relatedId: application.id,
+        },
+      });
+    }
 
     res.status(201).json(application);
   } catch (error) {

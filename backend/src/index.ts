@@ -10,6 +10,8 @@ import { blogRoutes } from './routes/blog';
 import { internshipRoutes } from './routes/internships';
 import { applicationRoutes } from './routes/applications';
 import { commentRoutes } from './routes/comments';
+import { likeRoutes } from './routes/likes';
+import { bookmarkRoutes } from './routes/bookmarks';
 import { notificationRoutes } from './routes/notifications';
 
 const app = express();
@@ -41,6 +43,8 @@ app.use('/api/blog', blogRoutes);
 app.use('/api/internships', internshipRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/likes', likeRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // Health check
