@@ -10,6 +10,8 @@ const createProjectSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   githubLink: z.string().url(),
+  category: z.enum(['AI', 'Web', 'Mobile']).optional(),
+  visibility: z.enum(['public', 'private']).optional(),
   teamId: z.string().optional(),
 });
 
@@ -17,6 +19,8 @@ const updateProjectSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
   githubLink: z.string().url().optional(),
+  category: z.enum(['AI', 'Web', 'Mobile']).optional(),
+  visibility: z.enum(['public', 'private']).optional(),
   teamId: z.string().optional(),
 });
 
@@ -25,6 +29,17 @@ router.get('/', async (req, res) => {
   try {
     const projects = await prisma.project.findMany({
       include: {
+        author: {
+          select: { id: true, name: true, avatar: true },
+        },
+        members: {
+          select: {
+            id: true,
+            userId: true,
+            name: true,
+            role: true,
+          },
+        },
         likes: {
           select: { userId: true },
         },
@@ -64,6 +79,17 @@ router.get('/:id', async (req, res) => {
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
+        author: {
+          select: { id: true, name: true, avatar: true },
+        },
+        members: {
+          select: {
+            id: true,
+            userId: true,
+            name: true,
+            role: true,
+          },
+        },
         likes: {
           select: { userId: true },
         },
@@ -106,7 +132,7 @@ router.get('/:id', async (req, res) => {
 // Create project
 router.post('/', authenticateToken, async (req: AuthRequest, res) => {
   try {
-    const { title, description, githubLink, teamId } = createProjectSchema.parse(req.body);
+    const { title, description, githubLink, category, visibility, teamId } = createProjectSchema.parse(req.body);
 
     const user = await prisma.user.findUnique({
       where: { id: req.user!.id },
@@ -122,9 +148,21 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
         title,
         description,
         githubLink,
+        category,
+        visibility: visibility || 'public',
         authorId: req.user!.id,
         authorName: user.name,
         teamId,
+      },
+    });
+
+    // Add author as project owner
+    await prisma.projectMember.create({
+      data: {
+        projectId: project.id,
+        userId: req.user!.id,
+        name: user.name,
+        role: 'owner',
       },
     });
 
@@ -296,6 +334,156 @@ router.post('/:id/bookmark', authenticateToken, async (req: AuthRequest, res) =>
     });
 
     res.json({ bookmarks: bookmarks.map(bookmark => bookmark.userId) });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Add project member
+router.post('/:projectId/members', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const projectId = String(req.params.projectId);
+    const { userId, role = 'contributor' } = z.object({
+      userId: z.string(),
+      role: z.enum(['owner', 'maintainer', 'contributor']).optional(),
+    }).parse(req.body);
+
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Only project owner/maintainers can add members
+    const requesterRole = await prisma.projectMember.findFirst({
+      where: { projectId, userId: req.user!.id },
+    });
+
+    if (!requesterRole || (requesterRole.role !== 'owner' && requesterRole.role !== 'maintainer')) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Check if already a member
+    const existingMember = await prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId, userId } },
+    });
+
+    if (existingMember) {
+      return res.status(400).json({ error: 'User is already a member of this project' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const member = await prisma.projectMember.create({
+      data: {
+        projectId,
+        userId,
+        name: user.name,
+        role,
+      },
+    });
+
+    // Create notification for new member
+    await prisma.notification.create({
+      data: {
+        userId,
+        type: 'project_member',
+        message: `You were added to the project "${project.title}" as ${role}`,
+        relatedId: projectId,
+      },
+    });
+
+    res.status(201).json(member);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update project member role
+router.patch('/:projectId/members/:userId', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const projectId = String(req.params.projectId);
+    const userId = String(req.params.userId);
+    const { role } = z.object({
+      role: z.enum(['owner', 'maintainer', 'contributor']),
+    }).parse(req.body);
+
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Only project owner can change roles
+    const requesterRole = await prisma.projectMember.findFirst({
+      where: { projectId, userId: req.user!.id },
+    });
+
+    if (!requesterRole || requesterRole.role !== 'owner') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const member = await prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId, userId } },
+    });
+
+    if (!member) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const updatedMember = await prisma.projectMember.update({
+      where: { id: member.id },
+      data: { role },
+    });
+
+    res.json(updatedMember);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Remove project member
+router.delete('/:projectId/members/:userId', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const projectId = String(req.params.projectId);
+    const userId = String(req.params.userId);
+
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Only owner can remove members or user can remove themselves
+    const requesterRole = await prisma.projectMember.findFirst({
+      where: { projectId, userId: req.user!.id },
+    });
+
+    if (!requesterRole || (requesterRole.role !== 'owner' && req.user!.id !== userId)) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const member = await prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId, userId } },
+    });
+
+    if (!member) {
+      return res.status(404).json({ error: 'Member not found' });
+    }
+
+    await prisma.projectMember.delete({ where: { id: member.id } });
+
+    res.json({ message: 'Member removed from project' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
