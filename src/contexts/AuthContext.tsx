@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 export type UserRole = "student" | "mentor" | "alumni";
 
@@ -7,65 +8,133 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  avatar?: string; // base64 or URL
+  avatar?: string;
   nickname?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => boolean;
-  register: (name: string, email: string, password: string, role: UserRole, nickname?: string, avatar?: string) => boolean;
-  updateUser: (updates: Partial<User>) => void;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string, role: UserRole, nickname?: string, avatar?: string) => Promise<boolean>;
+  updateUser: (updates: Partial<User>) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-interface StoredUser extends User {
-  password: string;
-}
-
-const defaultUsers: StoredUser[] = [
-  { id: "1", name: "Demo Student", email: "student@test.com", password: "123456", role: "student", nickname: "StudentDev" },
-  { id: "2", name: "Demo Mentor", email: "mentor@test.com", password: "123456", role: "mentor", nickname: "MentorGuide" },
-  { id: "3", name: "Demo Alumni", email: "alumni@test.com", password: "123456", role: "alumni", nickname: "AlumniPro" },
-];
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = useState<StoredUser[]>(defaultUsers);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const login = useCallback((email: string, password: string) => {
-    const found = users.find((u) => u.email === email && u.password === password);
-    if (found) {
-      const { password: _, ...userWithoutPassword } = found;
-      setUser(userWithoutPassword);
+  // Try to load user from token on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          apiService.setToken(token);
+          const response = await apiService.getCurrentUser();
+          setUser({
+            id: response.id,
+            name: response.name,
+            email: response.email,
+            role: response.role,
+            avatar: response.avatar,
+            nickname: response.nickname,
+          });
+        } catch (err) {
+          localStorage.removeItem('token');
+          apiService.clearToken();
+          setError(err instanceof Error ? err.message : 'Failed to load user');
+        }
+      }
+      setIsLoading(false);
+    };
+
+    loadUser();
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
+    try {
+      setError(null);
+      const response = await apiService.login(email, password);
+      setUser({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role as UserRole,
+        avatar: response.user.avatar,
+        nickname: response.user.nickname,
+      });
       return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      setError(message);
+      return false;
     }
-    return false;
-  }, [users]);
+  }, []);
 
-  const register = useCallback((name: string, email: string, password: string, role: UserRole, nickname?: string, avatar?: string) => {
-    if (users.find((u) => u.email === email)) return false;
-    const newUser: StoredUser = { id: String(Date.now()), name, email, password, role, nickname, avatar };
-    setUsers((prev) => [...prev, newUser]);
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    return true;
-  }, [users]);
+  const register = useCallback(async (
+    name: string,
+    email: string,
+    password: string,
+    role: UserRole,
+    nickname?: string,
+    avatar?: string
+  ) => {
+    try {
+      setError(null);
+      const response = await apiService.register(name, email, password, role, nickname, avatar);
+      setUser({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        role: response.user.role as UserRole,
+        avatar: response.user.avatar,
+        nickname: response.user.nickname,
+      });
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      setError(message);
+      return false;
+    }
+  }, []);
 
-  const updateUser = useCallback((updates: Partial<User>) => {
+  const updateUser = useCallback(async (updates: Partial<User>) => {
     if (!user) return;
-    const updatedUser = { ...user, ...updates };
-    setUser(updatedUser);
-    setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, ...updates } : u)));
+    try {
+      setError(null);
+      await apiService.updateUser(updates);
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Update failed';
+      setError(message);
+    }
   }, [user]);
 
-  const logout = useCallback(() => setUser(null), []);
+  const logout = useCallback(() => {
+    setUser(null);
+    apiService.clearToken();
+    localStorage.removeItem('token');
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, updateUser, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{
+      user,
+      login,
+      register,
+      updateUser,
+      logout,
+      isAuthenticated: !!user,
+      isLoading,
+      error,
+    }}>
       {children}
     </AuthContext.Provider>
   );

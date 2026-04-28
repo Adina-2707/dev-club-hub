@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [role, setRole] = useState<UserRole>("student");
   const [nickname, setNickname] = useState("");
   const [avatar, setAvatar] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -37,13 +38,21 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (register(name, email, password, role, nickname || undefined, avatar || undefined)) {
-      toast({ title: t("register.welcome") });
-      navigate("/profile");
-    } else {
-      toast({ title: t("register.failed"), description: t("register.failedDesc"), variant: "destructive" });
+    setIsLoading(true);
+    try {
+      const success = await register(name, email, password, role, nickname || undefined, avatar || undefined);
+      if (success) {
+        toast({ title: t("register.welcome") });
+        navigate("/profile");
+      } else {
+        toast({ title: t("register.failed"), description: t("register.failedDesc"), variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: t("register.error"), description: error instanceof Error ? error.message : t("register.failedDesc"), variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,24 +67,24 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">{t("register.name")}</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required className="h-11" />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" required className="h-11" disabled={isLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="nickname">{t("register.nickname")}</Label>
-              <Input id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="johndev" className="h-11" />
+              <Input id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="johndev" className="h-11" disabled={isLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="avatar">{t("register.avatar")}</Label>
-              <Input id="avatar" type="file" accept="image/*" onChange={handleAvatarChange} className="h-11" />
+              <Input id="avatar" type="file" accept="image/*" onChange={handleAvatarChange} className="h-11" disabled={isLoading} />
               {avatar && <img src={avatar} alt="Preview" className="w-16 h-16 rounded-full object-cover mt-2" />}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t("login.email")}</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="h-11" />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required className="h-11" disabled={isLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("login.password")}</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" required minLength={6} className="h-11" />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" required minLength={6} className="h-11" disabled={isLoading} />
             </div>
             <div className="space-y-2">
               <Label>{t("register.role")}</Label>
@@ -85,6 +94,7 @@ export default function RegisterPage() {
                     key={r.value}
                     type="button"
                     onClick={() => setRole(r.value)}
+                    disabled={isLoading}
                     className={`rounded-xl border p-3 text-center transition-all duration-200 ${
                       role === r.value ? "border-primary bg-primary/10 ring-2 ring-primary/30 shadow-sm" : "hover:bg-muted/80 hover:border-muted-foreground/20"
                     }`}
@@ -95,7 +105,7 @@ export default function RegisterPage() {
                 ))}
               </div>
             </div>
-            <Button type="submit" className="w-full h-11 gradient-btn text-primary-foreground border-0">{t("register.submit")}</Button>
+            <Button type="submit" className="w-full h-11 gradient-btn text-primary-foreground border-0" disabled={isLoading}>{isLoading ? t("loading") : t("register.submit")}</Button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-4">
             {t("register.hasAccount")}{" "}
