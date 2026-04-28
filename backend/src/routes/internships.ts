@@ -16,10 +16,6 @@ const updateInternshipSchema = z.object({
   description: z.string().min(1).optional(),
 });
 
-const createApplicationSchema = z.object({
-  internshipId: z.string(),
-});
-
 // Get all internships
 router.get('/', async (req, res) => {
   try {
@@ -190,100 +186,6 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
     await prisma.internship.delete({ where: { id } });
     res.json({ message: 'Internship deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Apply for internship
-router.post('/apply', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const { internshipId } = createApplicationSchema.parse(req.body);
-    const studentId = req.user!.id;
-
-    const internship = await prisma.internship.findUnique({ where: { id: internshipId } });
-    if (!internship) {
-      return res.status(404).json({ error: 'Internship not found' });
-    }
-
-    // Check if already applied
-    const existingApplication = await prisma.internshipApplication.findUnique({
-      where: { studentId_internshipId: { studentId, internshipId } },
-    });
-
-    if (existingApplication) {
-      return res.status(400).json({ error: 'Already applied for this internship' });
-    }
-
-    const application = await prisma.internshipApplication.create({
-      data: {
-        studentId,
-        internshipId,
-      },
-      include: {
-        student: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
-    });
-
-    res.status(201).json(application);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Update application status
-router.put('/applications/:applicationId', authenticateToken, async (req: AuthRequest, res) => {
-  try {
-    const applicationId = String(req.params.applicationId);
-    const { status } = z.object({ status: z.enum(['pending', 'accepted', 'rejected']) }).parse(req.body);
-
-    const application = await prisma.internshipApplication.findUnique({
-      where: { id: applicationId },
-      select: {
-        internship: {
-          select: { authorId: true },
-        },
-        studentId: true,
-      },
-    });
-
-    if (!application) {
-      return res.status(404).json({ error: 'Application not found' });
-    }
-
-    if (application.internship.authorId !== req.user!.id) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-
-    const updatedApplication = await prisma.internshipApplication.update({
-      where: { id: applicationId },
-      data: { status },
-      include: {
-        student: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
-    });
-
-    // Create notification for student
-    await prisma.notification.create({
-      data: {
-        userId: application.studentId,
-        type: 'application_status',
-        message: `Your internship application status has been updated to ${status}`,
-        relatedId: applicationId,
-      },
-    });
-
-    res.json(updatedApplication);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: error.errors });
-    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });

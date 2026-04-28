@@ -115,6 +115,7 @@ model InternshipApplication {
   id           String   @id @default(cuid())
   studentId    String
   internshipId String
+  message      String?
   status       String   @default("pending") // "pending" | "accepted" | "rejected"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

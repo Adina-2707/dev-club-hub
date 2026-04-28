@@ -8,6 +8,7 @@ import { projectRoutes } from './routes/projects';
 import { teamRoutes } from './routes/teams';
 import { blogRoutes } from './routes/blog';
 import { internshipRoutes } from './routes/internships';
+import { applicationRoutes } from './routes/applications';
 import { commentRoutes } from './routes/comments';
 import { notificationRoutes } from './routes/notifications';
 
@@ -38,6 +39,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/internships', internshipRoutes);
+app.use('/api/applications', applicationRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
 
