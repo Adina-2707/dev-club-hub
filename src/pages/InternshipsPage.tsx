@@ -21,6 +21,22 @@ export default function InternshipsPage() {
   const [selectedInternship, setSelectedInternship] = useState<string>("");
   const [applicationMessage, setApplicationMessage] = useState("");
 
+  const canCreate = isAuthenticated && user?.role === "mentor";
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    addInternship({
+      title,
+      description,
+      authorId: user.id,
+      authorName: user.nickname || user.name
+    });
+    setTitle("");
+    setDescription("");
+    setOpen(false);
+  };
+
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !selectedInternship) return;

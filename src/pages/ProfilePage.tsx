@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useData } from "@/contexts/DataContext";
+import { BlogPost, Internship, useData } from "@/contexts/DataContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { RoleBadge } from "@/components/RoleBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +50,7 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleEditInternship = (internship: any) => {
+  const handleEditInternship = (internship: Internship) => {
     setEditingInternship(internship.id);
     setEditInternshipTitle(internship.title);
     setEditInternshipDesc(internship.description);
@@ -67,7 +67,7 @@ export default function ProfilePage() {
     setEditingInternship(null);
   };
 
-  const handleEditBlogPost = (blogPost: any) => {
+  const handleEditBlogPost = (blogPost: BlogPost) => {
     setEditingBlogPost(blogPost.id);
     setEditBlogTitle(blogPost.title);
     setEditBlogContent(blogPost.content);

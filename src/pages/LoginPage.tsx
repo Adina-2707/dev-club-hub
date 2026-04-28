@@ -11,18 +11,27 @@ import { useToast } from "@/hooks/use-toast";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
-      toast({ title: t("login.welcome") });
-      navigate("/profile");
-    } else {
-      toast({ title: t("login.invalid"), description: t("login.invalidDesc"), variant: "destructive" });
+    setIsLoading(true);
+    try {
+      const success = await login(email, password);
+      if (success) {
+        toast({ title: t("login.welcome") });
+        navigate("/profile");
+      } else {
+        toast({ title: t("login.invalid"), description: t("login.invalidDesc"), variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: t("login.error"), description: error instanceof Error ? error.message : t("login.invalidDesc"), variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -37,13 +46,13 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">{t("login.email")}</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="student@test.com" required className="h-11" />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="student@test.com" required className="h-11" disabled={isLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">{t("login.password")}</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" required className="h-11" />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" required className="h-11" disabled={isLoading} />
             </div>
-            <Button type="submit" className="w-full h-11 gradient-btn text-primary-foreground border-0">{t("login.submit")}</Button>
+            <Button type="submit" className="w-full h-11 gradient-btn text-primary-foreground border-0" disabled={isLoading}>{isLoading ? t("loading") : t("login.submit")}</Button>
           </form>
           <div className="mt-6 rounded-xl bg-muted/50 p-4 border">
             <p className="text-xs font-semibold text-muted-foreground mb-2.5">{t("login.demo")}</p>

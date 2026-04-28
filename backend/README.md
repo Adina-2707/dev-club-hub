@@ -47,4 +47,17 @@ npm run dev
 ## Notes
 
 - A local SQLite database is stored at `backend/dev.db`.
-- Use the `.env` file to customize `PORT`, `FRONTEND_URL`, and `JWT_SECRET`.
+- Use the `.env` file to customize `PORT`, `FRONTEND_URL`, `JWT_SECRET`, and `DATABASE_URL`.
+
+## Railway deployment
+
+For Railway, set these environment variables in the project settings:
+
+- `DATABASE_URL` — path to the SQLite file or the Postgres connection string
+- `JWT_SECRET` — secret for JWT tokens
+- `FRONTEND_URL` — frontend URL allowed by CORS
+- `PORT` — Railway provides this automatically; the app uses `process.env.PORT` fallback
+
+The backend uses `npm start` and a `Procfile` for the web process. `postinstall` now generates the Prisma client and builds the app automatically.
+
+> Note: Prisma schema is currently configured for SQLite by default. If you want Railway to use Postgres, update `prisma/schema.prisma` with `provider = "postgresql"` and set `DATABASE_URL` to the Railway Postgres URL.
