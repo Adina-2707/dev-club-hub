@@ -14,9 +14,9 @@ const authMiddleware = async (req, res, next) => {
   }
 
   try {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new AppError('JWT_SECRET is not configured', 500);
+    const secret = process.env.JWT_SECRET || 'devclub_jwt_secret';
+    if (!process.env.JWT_SECRET) {
+      console.warn('JWT_SECRET is not configured; using fallback signing key. Set JWT_SECRET in environment for production.');
     }
 
     const payload = jwt.verify(token, secret);

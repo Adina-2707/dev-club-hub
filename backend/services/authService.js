@@ -4,9 +4,9 @@ const AppError = require('../errors/AppError');
 const { getUserByEmail, createUser } = require('./userService');
 
 const generateToken = (user) => {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new AppError('JWT secret is not configured', 500);
+  const secret = process.env.JWT_SECRET || 'devclub_jwt_secret';
+  if (!process.env.JWT_SECRET) {
+    console.warn('JWT_SECRET is not configured; using fallback signing key. Set JWT_SECRET in environment for production.');
   }
 
   return jwt.sign(

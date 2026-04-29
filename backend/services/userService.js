@@ -15,11 +15,14 @@ const getUserByEmail = async (email) => {
   return result.rows[0] || null;
 };
 
-const createUser = async ({ name, email, role }) => {
-  const result = await query(
-    'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING id, name, email, role, created_at',
-    [name, email, role],
-  );
+const createUser = async ({ name, email, role, password = null }) => {
+  const hasPassword = typeof password === 'string' && password.length > 0;
+  const queryText = hasPassword
+    ? 'INSERT INTO users (name, email, role, password) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role, created_at'
+    : 'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING id, name, email, role, created_at';
+  const queryParams = hasPassword ? [name, email, role, password] : [name, email, role];
+
+  const result = await query(queryText, queryParams);
   return result.rows[0];
 };
 
