@@ -47,8 +47,9 @@ const authenticateUser = async ({ email, password }) => {
     throw new AppError('Invalid email or password', 401);
   }
 
-  const token = generateToken(user);
-  return { user, token };
+  const { password: _, ...safeUser } = user;
+  const token = generateToken(safeUser);
+  return { user: safeUser, token };
 };
 
 module.exports = {
