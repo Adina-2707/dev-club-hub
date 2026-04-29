@@ -1,5 +1,5 @@
 const AppError = require('../errors/AppError');
-const { getAllUsers, getUserById } = require('../services/userService');
+const { getAllUsers, getUserById, createUser } = require('../services/userService');
 const { successResponse } = require('../utils/response');
 
 const listUsers = async (req, res) => {
@@ -16,7 +16,18 @@ const getUser = async (req, res, next) => {
   res.json(successResponse(user));
 };
 
+const createUserHandler = async (req, res) => {
+  const { name, email, role } = req.body;
+  const user = await createUser({
+    name,
+    email,
+    role: role || 'student',
+  });
+  res.status(201).json(successResponse(user));
+};
+
 module.exports = {
   listUsers,
   getUser,
+  createUserHandler,
 };

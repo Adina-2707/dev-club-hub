@@ -17,8 +17,7 @@ const getProject = async (req, res, next) => {
 };
 
 const createProjectHandler = async (req, res) => {
-  const { title, description, github_link } = req.body;
-  const owner_id = req.user.id;
+  const { title, description, github_link, owner_id } = req.body;
   const project = await createProject({ title, description, github_link, owner_id });
   res.status(201).json(successResponse(project));
 };
@@ -30,10 +29,6 @@ const updateProjectHandler = async (req, res, next) => {
     return next(new AppError('Project not found', 404));
   }
 
-  if (project.owner_id !== req.user.id) {
-    return next(new AppError('Forbidden: only project owner can modify this project', 403));
-  }
-
   const updated = await updateProject(id, req.body);
   res.json(successResponse(updated));
 };
@@ -43,10 +38,6 @@ const deleteProjectHandler = async (req, res, next) => {
   const project = await getProjectById(id);
   if (!project) {
     return next(new AppError('Project not found', 404));
-  }
-
-  if (project.owner_id !== req.user.id) {
-    return next(new AppError('Forbidden: only project owner can delete this project', 403));
   }
 
   await deleteProject(id);
