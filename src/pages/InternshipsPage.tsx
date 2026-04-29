@@ -54,6 +54,10 @@ export default function InternshipsPage() {
     return applications.some(app => app.studentId === user?.id && app.internshipId === internshipId);
   };
 
+  const getApplicationStatus = (internshipId: string) => {
+    return applications.find(app => app.studentId === user?.id && app.internshipId === internshipId)?.status;
+  };
+
   return (
     <div className="container mx-auto px-4 py-10 fade-in">
       <div className="flex items-center justify-between mb-10">
@@ -103,9 +107,11 @@ export default function InternshipsPage() {
         <EmptyState title={t("internships.empty")} description={t("internships.emptyDesc")} />
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {internships.map((i) => (
-            <Card key={i.id} className="card-hover rounded-2xl overflow-hidden">
-              <div className="h-1.5 hero-gradient" />
+          {internships.map((i) => {
+            const appStatus = getApplicationStatus(i.id);
+            return (
+              <Card key={i.id} className="card-hover rounded-2xl overflow-hidden">
+                <div className="h-1.5 hero-gradient" />
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <div className="h-8 w-8 rounded-lg hero-gradient flex items-center justify-center">
@@ -118,18 +124,31 @@ export default function InternshipsPage() {
               <CardContent>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">{i.description}</p>
                 {isAuthenticated && user?.role === "student" && (
-                  <Button
-                    type="button"
-                    onClick={() => { setSelectedInternship(i.id); setApplyOpen(true); }}
-                    disabled={hasApplied(i.id)}
-                    className="w-full gradient-btn text-primary-foreground border-0"
-                  >
-                    {hasApplied(i.id) ? t("internships.responded") : t("internships.respond")}
-                  </Button>
+                  <>
+                    {appStatus && (
+                      <span className={`inline-flex items-center text-xs px-2 py-1 rounded-full mb-3 ${
+                        appStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
+                        appStatus === "accepted" ? "bg-green-100 text-green-800" :
+                        "bg-red-100 text-red-800"
+                      }`}>
+                        {appStatus === "pending" ? t("profile.pending") :
+                         appStatus === "accepted" ? t("profile.accepted") :
+                         t("profile.rejected")}
+                      </span>
+                    )}
+                    <Button
+                      type="button"
+                      onClick={() => { setSelectedInternship(i.id); setApplyOpen(true); }}
+                      disabled={hasApplied(i.id)}
+                      className="w-full gradient-btn text-primary-foreground border-0"
+                    >
+                      {hasApplied(i.id) ? t("internships.responded") : t("internships.respond")}
+                    </Button>
+                  </>
                 )}
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       )}
     </div>
