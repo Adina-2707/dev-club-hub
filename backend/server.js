@@ -13,11 +13,14 @@ const { successResponse } = require('./utils/response');
 
 const app = express();
 const port = process.env.PORT || 3001;
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-
 app.set('trust proxy', 1);
 app.use(helmet());
-app.use(cors({ origin: frontendUrl, credentials: true }));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(morgan('combined'));
 app.use(
