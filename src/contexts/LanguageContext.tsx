@@ -113,10 +113,14 @@ const translations = {
   "internships.empty": { ru: "Пока нет стажировок", en: "No internships yet" },
   "internships.emptyDesc": { ru: "Менторы скоро опубликуют возможности.", en: "Mentors will post opportunities soon." },
   "internships.apply": { ru: "Подать заявку", en: "Apply" },
-  "internships.applied": { ru: "Заявка подана", en: "Applied" },
+  "internships.respond": { ru: "Откликнуться", en: "Respond" },
+  "internships.responded": { ru: "Отклик отправлен", en: "Responded" },
   "internships.applyTitle": { ru: "Подать заявку на стажировку", en: "Apply for Internship" },
+  "internships.respondTitle": { ru: "Откликнуться на стажировку", en: "Respond to Internship" },
   "internships.coverLetter": { ru: "Сопроводительное письмо (необязательно)", en: "Cover letter (optional)" },
+  "internships.message": { ru: "Напишите сообщение для работодателя", en: "Write a message for the employer" },
   "internships.submitApplication": { ru: "Отправить заявку", en: "Submit Application" },
+  "internships.submitResponse": { ru: "Отправить отклик", en: "Send response" },
   "internships.description": { ru: "Описание стажировки", en: "Internship description" },
 
   // Teams

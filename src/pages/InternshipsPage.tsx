@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Briefcase } from "lucide-react";
 
 export default function InternshipsPage() {
@@ -81,15 +81,20 @@ export default function InternshipsPage() {
       {/* Apply Dialog */}
       <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
         <DialogContent className="rounded-2xl">
-          <DialogHeader><DialogTitle>{t("internships.applyTitle")}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("internships.respondTitle")}</DialogTitle></DialogHeader>
           <form onSubmit={handleApply} className="space-y-4">
             <Textarea
-              placeholder={t("internships.coverLetter")}
+              placeholder={t("internships.message")}
               value={applicationMessage}
               onChange={(e) => setApplicationMessage(e.target.value)}
               className="min-h-[100px]"
             />
-            <Button type="submit" className="w-full gradient-btn text-primary-foreground border-0 h-11">{t("internships.submitApplication")}</Button>
+            <DialogFooter className="flex flex-col gap-3 sm:flex-row">
+              <Button type="submit" className="w-full sm:w-auto flex-1 gradient-btn text-primary-foreground border-0 h-11">{t("internships.submitResponse")}</Button>
+              <Button type="button" variant="secondary" onClick={() => setApplyOpen(false)} className="w-full sm:w-auto flex-1 h-11">
+                {t("profile.cancel")}
+              </Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
@@ -114,11 +119,12 @@ export default function InternshipsPage() {
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">{i.description}</p>
                 {isAuthenticated && user?.role === "student" && (
                   <Button
+                    type="button"
                     onClick={() => { setSelectedInternship(i.id); setApplyOpen(true); }}
                     disabled={hasApplied(i.id)}
                     className="w-full gradient-btn text-primary-foreground border-0"
                   >
-                    {hasApplied(i.id) ? t("internships.applied") : t("internships.apply")}
+                    {hasApplied(i.id) ? t("internships.responded") : t("internships.respond")}
                   </Button>
                 )}
               </CardContent>
