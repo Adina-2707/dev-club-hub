@@ -31,12 +31,9 @@ export default function LandingPage() {
         <div className="absolute top-20 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
         <div className="container mx-auto px-4 text-center relative">
-          <div className="flex flex-col items-center gap-4 mb-8 slide-up">
-            <img src="/logo.svg" alt="Dev Club Hub logo" className="h-20 w-20 rounded-3xl shadow-lg shadow-primary/10" />
-            <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 backdrop-blur-sm px-4 py-1.5 text-sm text-muted-foreground">
-              <Rocket className="h-4 w-4 text-primary" />
-              <span>{t("landing.badge")}</span>
-            </div>
+          <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 backdrop-blur-sm px-4 py-1.5 text-sm text-muted-foreground mb-8 slide-up">
+            <Rocket className="h-4 w-4 text-primary" />
+            <span>{t("landing.badge")}</span>
           </div>
           <h1 className="text-4xl md:text-7xl font-extrabold tracking-tight mb-6 slide-up max-w-4xl mx-auto leading-[1.1]">
             {t("landing.title")}{" "}
