@@ -44,6 +44,18 @@ async function main() {
     },
   });
 
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@test.com' },
+    update: {},
+    create: {
+      name: 'Demo Admin',
+      email: 'admin@test.com',
+      password: hashedPassword,
+      role: 'admin',
+      nickname: 'AdminMaster',
+    },
+  });
+
   // Create sample projects
   const project1 = await prisma.project.upsert({
     where: { id: 'p1' },

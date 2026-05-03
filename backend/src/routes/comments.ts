@@ -1,7 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -122,12 +122,30 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Comment not found' });
     }
 
-    if (comment.authorId !== req.user!.id) {
+    if (comment.authorId !== req.user!.id && req.user!.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
     await prisma.comment.delete({ where: { id } });
     res.json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all comments for admin
+router.get('/admin', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const comments = await prisma.comment.findMany({
+      include: {
+        author: {
+          select: { id: true, name: true, avatar: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(comments);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }

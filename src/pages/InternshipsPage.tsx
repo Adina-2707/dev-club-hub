@@ -112,43 +112,44 @@ export default function InternshipsPage() {
             return (
               <Card key={i.id} className="card-hover rounded-2xl overflow-hidden">
                 <div className="h-1.5 hero-gradient" />
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg hero-gradient flex items-center justify-center">
-                    <Briefcase className="h-4 w-4 text-primary-foreground" />
-                  </div>
-                  {i.title}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">{t("projects.by")} {i.authorName} · {i.createdAt}</p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{i.description}</p>
-                {isAuthenticated && user?.role === "student" && (
-                  <>
-                    {appStatus && (
-                      <span className={`inline-flex items-center text-xs px-2 py-1 rounded-full mb-3 ${
-                        appStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
-                        appStatus === "accepted" ? "bg-green-100 text-green-800" :
-                        "bg-red-100 text-red-800"
-                      }`}>
-                        {appStatus === "pending" ? t("profile.pending") :
-                         appStatus === "accepted" ? t("profile.accepted") :
-                         t("profile.rejected")}
-                      </span>
-                    )}
-                    <Button
-                      type="button"
-                      onClick={() => { setSelectedInternship(i.id); setApplyOpen(true); }}
-                      disabled={hasApplied(i.id)}
-                      className="w-full gradient-btn text-primary-foreground border-0"
-                    >
-                      {hasApplied(i.id) ? t("internships.responded") : t("internships.respond")}
-                    </Button>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          )})}
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg hero-gradient flex items-center justify-center">
+                      <Briefcase className="h-4 w-4 text-primary-foreground" />
+                    </div>
+                    {i.title}
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">{t("projects.by")} {i.authorName} · {i.createdAt}</p>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{i.description}</p>
+                  {isAuthenticated && user?.role === "student" && (
+                    <>
+                      {appStatus && (
+                        <span className={`inline-flex items-center text-xs px-2 py-1 rounded-full mb-3 ${
+                          appStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
+                          appStatus === "accepted" ? "bg-green-100 text-green-800" :
+                          "bg-red-100 text-red-800"
+                        }`}>
+                          {appStatus === "pending" ? t("profile.pending") :
+                           appStatus === "accepted" ? t("profile.accepted") :
+                           t("profile.rejected")}
+                        </span>
+                      )}
+                      <Button
+                        type="button"
+                        onClick={() => { setSelectedInternship(i.id); setApplyOpen(true); }}
+                        disabled={hasApplied(i.id)}
+                        className="w-full gradient-btn text-primary-foreground border-0"
+                      >
+                        {hasApplied(i.id) ? t("internships.responded") : t("internships.respond")}
+                      </Button>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

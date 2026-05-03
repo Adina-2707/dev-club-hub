@@ -90,6 +90,7 @@ const translations = {
   "projects.addComment": { ru: "Написать комментарий...", en: "Write a comment..." },
   "projects.post": { ru: "Отправить", en: "Post" },
   "projects.saved": { ru: "Сохранено", en: "Saved" },
+  "comments.empty": { ru: "Пока нет комментариев", en: "No comments yet" },
   "projects.topProjects": { ru: "Популярные проекты", en: "Top Projects" },
 
   // Blog

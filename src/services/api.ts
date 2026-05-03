@@ -1,9 +1,40 @@
 const rawApiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').trim();
-const API_BASE_URL = rawApiBaseUrl.replace(/\/api\/?$/, '').replace(/\/+$/, '');
+const baseUrl = rawApiBaseUrl.replace(/\/+$/, '');
+const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 
 export interface ApiResponse<T> {
   data?: T;
   error?: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'student' | 'mentor' | 'alumni' | 'admin';
+  avatar?: string;
+  nickname?: string;
+  blocked?: boolean;
+}
+
+export interface AdminProject {
+  id: string;
+  title: string;
+  authorName: string;
+  createdAt: string;
+  author?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface AdminComment {
+  id: string;
+  text: string;
+  authorName: string;
+  targetType: string;
+  targetId: string;
+  createdAt: string;
 }
 
 export interface AuthResponse {
@@ -222,6 +253,22 @@ class ApiService {
 
   async deleteComment(id: string) {
     return this.request(`/comments/${id}`, 'DELETE');
+  }
+
+  async getUsers() {
+    return this.request<User[]>('/users', 'GET');
+  }
+
+  async deleteUser(id: string) {
+    return this.request(`/users/${id}`, 'DELETE');
+  }
+
+  async blockUser(id: string) {
+    return this.request(`/users/${id}/block`, 'PATCH');
+  }
+
+  async getAdminComments() {
+    return this.request<AdminComment[]>('/comments/admin', 'GET');
   }
 
   // Notifications endpoints

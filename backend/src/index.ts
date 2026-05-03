@@ -13,6 +13,7 @@ import { commentRoutes } from './routes/comments';
 import { likeRoutes } from './routes/likes';
 import { bookmarkRoutes } from './routes/bookmarks';
 import { notificationRoutes } from './routes/notifications';
+import { userRoutes } from './routes/users';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -43,6 +44,7 @@ app.use('/api/blog', blogRoutes);
 app.use('/api/internships', internshipRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/notifications', notificationRoutes);

@@ -28,6 +28,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { label: t("nav.blog"), path: "/blog" },
     { label: t("nav.internships"), path: "/internships" },
     ...(isAuthenticated && user?.role === "student" ? [{ label: t("nav.teams"), path: "/teams" }] : []),
+    ...(isAuthenticated && user?.role === "admin" ? [{ label: "Admin", path: "/admin" }] : []),
   ];
 
   const isActive = (path: string) => location.pathname === path;

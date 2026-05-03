@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Github, Plus, ExternalLink, Heart, Bookmark, MessageCircle, Send } from "lucide-react";
+import { Github, Plus, ExternalLink, Heart, Bookmark, MessageCircle } from "lucide-react";
+import { CommentSection } from "@/components/CommentSection";
 
 export default function ProjectsPage() {
   const { user, isAuthenticated } = useAuth();
@@ -118,28 +119,15 @@ export default function ProjectsPage() {
 
                   {/* Comments Section */}
                   {showComments && (
-                    <div className="space-y-3 pt-2 fade-in">
-                      {projectComments.map((c) => (
-                        <div key={c.id} className="text-sm bg-muted/50 rounded-xl p-3">
-                          <p className="font-medium text-xs text-foreground mb-0.5">{c.authorName}</p>
-                          <p className="text-muted-foreground">{c.text}</p>
-                        </div>
-                      ))}
-                      {isAuthenticated && (
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder={t("projects.addComment")}
-                            value={commentInputs[p.id] || ""}
-                            onChange={(e) => setCommentInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
-                            onKeyDown={(e) => e.key === "Enter" && handleComment(p.id)}
-                            className="h-9 text-sm"
-                          />
-                          <Button size="sm" onClick={() => handleComment(p.id)} className="h-9 px-3">
-                            <Send className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
+                    <CommentSection
+                      comments={projectComments}
+                      value={commentInputs[p.id] || ""}
+                      onChange={(value) => setCommentInputs((prev) => ({ ...prev, [p.id]: value }))}
+                      onSubmit={() => handleComment(p.id)}
+                      placeholder={t("projects.addComment")}
+                      emptyText={t("comments.empty")}
+                      isAuthenticated={isAuthenticated}
+                    />
                   )}
                 </CardContent>
               </Card>

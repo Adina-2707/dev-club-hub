@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { apiService } from "@/services/api";
 
-export type UserRole = "student" | "mentor" | "alumni";
+export type UserRole = "student" | "mentor" | "alumni" | "admin";
 
 export interface User {
   id: string;

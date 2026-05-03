@@ -85,6 +85,10 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
+    if (user.blocked) {
+      return res.status(403).json({ error: 'User is blocked' });
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(400).json({ error: 'Invalid credentials' });
@@ -118,6 +122,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
         role: true,
         nickname: true,
         avatar: true,
+        blocked: true,
       },
     });
 

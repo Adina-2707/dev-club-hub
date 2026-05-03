@@ -15,6 +15,8 @@ import TeamsPage from "./pages/TeamsPage";
 import BlogPage from "./pages/BlogPage";
 import InternshipsPage from "./pages/InternshipsPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,7 @@ const App = () => (
                     <Route path="/blog" element={<BlogPage />} />
                     <Route path="/internships" element={<InternshipsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>

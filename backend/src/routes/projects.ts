@@ -242,7 +242,7 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (project.authorId !== req.user!.id) {
+    if (project.authorId !== req.user!.id && req.user!.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
