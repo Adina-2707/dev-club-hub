@@ -30,14 +30,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Try to load user from token on mount
   useEffect(() => {
     const loadUser = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
         try {
           apiService.setToken(token);
-          const response = await apiService.getCurrentUser();
+          const response = (await apiService.getCurrentUser()) as User;
           setUser({
             id: response.id,
             name: response.name,
@@ -47,9 +46,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             nickname: response.nickname,
           });
         } catch (err) {
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
           apiService.clearToken();
-          setError(err instanceof Error ? err.message : 'Failed to load user');
+          setError(err instanceof Error ? err.message : "Failed to load user");
         }
       }
       setIsLoading(false);
@@ -72,30 +71,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
+      const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
+      throw err;
+    }
+  }, []);
+
+  const register = useCallback(
+    async (name: string, email: string, password: string, role: UserRole, nickname?: string, avatar?: string) => {
+      try {
+        setError(null);
+        const response = await apiService.register(name, email, password, role, nickname, avatar);
+        setUser({
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          role: response.user.role as UserRole,
+          avatar: response.user.avatar,
+          nickname: response.user.nickname,
+        });
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Registration failed";
+        setError(message);
         throw err;
-        name: response.user.name,
-        email: response.user.email,
-        role: response.user.role as UserRole,
-        avatar: response.user.avatar,
-        nickname: response.user.nickname,
-      });
-      return true;
+      }
+    },
+    []
+  );
+
+  const updateUser = useCallback(async (updates: Partial<User>) => {
+    try {
+      setError(null);
+      const response = await apiService.updateUser(updates);
+      setUser((prev) => (prev ? { ...prev, ...response } : prev));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed';
+      const message = err instanceof Error ? err.message : "Update failed";
       setError(message);
-        throw err;
-    <AuthContext.Provider value={{
-      user,
-      login,
-      register,
-      updateUser,
-      logout,
-      isAuthenticated: !!user,
-      isLoading,
-      error,
-    }}>
+      throw err;
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    apiService.clearToken();
+    setUser(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        updateUser,
+        logout,
+        isAuthenticated: !!user,
+        isLoading,
+        error,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
