@@ -71,6 +71,7 @@ router.post('/register', async (req, res) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
+    console.error('Auth register error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -106,6 +107,7 @@ router.post('/login', async (req, res) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
+    console.error('Auth login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -132,6 +134,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
 
     res.json(user);
   } catch (error) {
+    console.error('Auth get /me error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -159,6 +162,7 @@ router.put('/me', authenticateToken, async (req: AuthRequest, res) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
+    console.error('Auth update user error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -10,7 +10,7 @@ This backend provides a complete REST API for the Dev Club Hub frontend.
 - Blog post CRUD
 - Internship posting and applications
 - Comments and notifications
-- SQLite database via Prisma
+- PostgreSQL database via Prisma
 
 ## Setup
 
@@ -46,18 +46,18 @@ npm run dev
 
 ## Notes
 
-- A local SQLite database is stored at `backend/dev.db`.
+- The database connection is configured through `DATABASE_URL`.
 - Use the `.env` file to customize `PORT`, `FRONTEND_URL`, `JWT_SECRET`, and `DATABASE_URL`.
 
 ## Railway deployment
 
 For Railway, set these environment variables in the project settings:
 
-- `DATABASE_URL` — path to the SQLite file or the Postgres connection string
+- `DATABASE_URL` — Postgres connection string for production
 - `JWT_SECRET` — secret for JWT tokens
 - `FRONTEND_URL` — frontend URL allowed by CORS
 - `PORT` — Railway provides this automatically; the app uses `process.env.PORT` fallback
 
 The backend uses `npm start` and a `Procfile` for the web process. `postinstall` now generates the Prisma client and builds the app automatically.
 
-> Note: Prisma schema is currently configured for SQLite by default. If you want Railway to use Postgres, update `prisma/schema.prisma` with `provider = "postgresql"` and set `DATABASE_URL` to the Railway Postgres URL.
+> Note: Prisma schema is configured for PostgreSQL in production. Make sure `DATABASE_URL` on Railway points to the Railway Postgres URL.

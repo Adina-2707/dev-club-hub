@@ -74,23 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
-      return false;
-    }
-  }, []);
-
-  const register = useCallback(async (
-    name: string,
-    email: string,
-    password: string,
-    role: UserRole,
-    nickname?: string,
-    avatar?: string
-  ) => {
-    try {
-      setError(null);
-      const response = await apiService.register(name, email, password, role, nickname, avatar);
-      setUser({
-        id: response.user.id,
+        throw err;
         name: response.user.name,
         email: response.user.email,
         role: response.user.role as UserRole,
@@ -101,30 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed';
       setError(message);
-      return false;
-    }
-  }, []);
-
-  const updateUser = useCallback(async (updates: Partial<User>) => {
-    if (!user) return;
-    try {
-      setError(null);
-      await apiService.updateUser(updates);
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Update failed';
-      setError(message);
-    }
-  }, [user]);
-
-  const logout = useCallback(() => {
-    setUser(null);
-    apiService.clearToken();
-    localStorage.removeItem('token');
-  }, []);
-
-  return (
+        throw err;
     <AuthContext.Provider value={{
       user,
       login,
