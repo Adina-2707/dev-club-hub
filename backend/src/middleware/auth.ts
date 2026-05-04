@@ -38,3 +38,7 @@ export const requireRole = (roles: string[]) => {
     next();
   };
 };
+
+export const hasRole = (req: AuthRequest, roles: string[]) => {
+  return !!req.user && roles.includes(req.user.role);
+};

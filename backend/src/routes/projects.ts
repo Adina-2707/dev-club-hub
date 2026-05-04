@@ -1,7 +1,8 @@
 import express from 'express';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import { authenticateToken, AuthRequest, hasRole } from '../middleware/auth';
+import { logAdminAction } from '../utils/adminLog';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -242,11 +243,16 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (project.authorId !== req.user!.id && req.user!.role !== 'admin') {
+    if (project.authorId !== req.user!.id && !hasRole(req, ['admin'])) {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
     await prisma.project.delete({ where: { id } });
+
+    if (hasRole(req, ['admin'])) {
+      logAdminAction(req.user!.id, 'DELETE_PROJECT', id);
+    }
+
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });

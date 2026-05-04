@@ -1,6 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { logAdminAction } from '../utils/adminLog';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -39,6 +40,8 @@ router.delete('/:id', authenticateToken, requireRole(['admin']), async (req: Aut
     }
 
     await prisma.user.delete({ where: { id } });
+
+    logAdminAction(req.user!.id, 'DELETE_USER', id);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -62,6 +65,7 @@ router.patch('/:id/block', authenticateToken, requireRole(['admin']), async (req
       },
     });
 
+    logAdminAction(req.user!.id, 'BLOCK_USER', id);
     res.json({ message: 'User blocked successfully', user });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });

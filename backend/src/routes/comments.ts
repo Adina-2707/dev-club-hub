@@ -1,7 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
-import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { authenticateToken, requireRole, AuthRequest, hasRole } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -122,7 +122,7 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Comment not found' });
     }
 
-    if (comment.authorId !== req.user!.id && req.user!.role !== 'admin') {
+    if (comment.authorId !== req.user!.id && !hasRole(req, ['admin'])) {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
