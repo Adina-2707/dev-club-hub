@@ -25,10 +25,10 @@ type DeleteTarget = {
   label: string;
 } | null;
 
-const navItems: Array<{ id: Section; label: string }> = [
-  { id: 'users', label: 'Users' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'comments', label: 'Comments' },
+const navItems: Array<{ id: Section; label: string; description: string }> = [
+  { id: 'users', label: 'Users', description: 'Все учетные записи' },
+  { id: 'projects', label: 'Projects', description: 'Пулы проектов' },
+  { id: 'comments', label: 'Comments', description: 'Все комментарии' },
 ];
 
 export default function AdminPage() {
@@ -52,24 +52,31 @@ export default function AdminPage() {
     queryFn: () => apiService.getAdminComments(),
   });
 
+  const isLoading = usersQuery.isLoading || projectsQuery.isLoading || commentsQuery.isLoading;
+
   const deleteUserMutation = useMutation({
     mutationFn: (id: string) => apiService.deleteUser(id),
-    onSuccess: () => queryClient.invalidateQueries(['admin-users']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 
   const blockUserMutation = useMutation({
     mutationFn: (id: string) => apiService.blockUser(id),
-    onSuccess: () => queryClient.invalidateQueries(['admin-users']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+
+  const unblockUserMutation = useMutation({
+    mutationFn: (id: string) => apiService.unblockUser(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 
   const deleteProjectMutation = useMutation({
     mutationFn: (id: string) => apiService.deleteProject(id),
-    onSuccess: () => queryClient.invalidateQueries(['admin-projects']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-projects'] }),
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: (id: string) => apiService.deleteComment(id),
-    onSuccess: () => queryClient.invalidateQueries(['admin-comments']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-comments'] }),
   });
 
   const activeUsers = usersQuery.data ?? [];
@@ -104,82 +111,128 @@ export default function AdminPage() {
     }
   };
 
+  const stats = [
+    {
+      title: 'Users',
+      value: activeUsers.length,
+      description: 'Всего пользователей в системе',
+    },
+    {
+      title: 'Projects',
+      value: activeProjects.length,
+      description: 'Проектов доступно для администрирования',
+    },
+    {
+      title: 'Comments',
+      value: activeComments.length,
+      description: 'Комментариев всего',
+    },
+  ];
+
   return (
-    <div className="mx-auto flex w-full max-w-[1200px] gap-6 px-4 py-6">
-      <aside className="w-72 rounded-3xl border border-muted/70 bg-background/80 p-5 shadow-sm">
-        <div className="mb-6 space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Admin Panel</p>
-          <h1 className="text-2xl font-semibold text-foreground">Управление</h1>
-          <p className="text-sm text-muted-foreground">Реальные данные из backend, доступ только для admin.</p>
-        </div>
-
-        <div className="space-y-2">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${section === item.id ? 'bg-primary text-primary-foreground shadow-sm' : 'text-foreground hover:bg-muted/80'}`}
-              onClick={() => setSection(item.id)}
-            >
-              <span>{item.label}</span>
-              <Badge variant="secondary">{item.id === 'users' ? activeUsers.length : item.id === 'projects' ? activeProjects.length : activeComments.length}</Badge>
-            </button>
-          ))}
-        </div>
-      </aside>
-
-      <section className="flex-1 space-y-6">
-        <div className="flex flex-col gap-4 rounded-3xl border border-muted/70 bg-background/80 p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">{section.toUpperCase()}</p>
-            <h2 className="text-3xl font-semibold text-foreground">{navItems.find((item) => item.id === section)?.label}</h2>
+    <div className="mx-auto w-full max-w-[1200px] px-4 py-6">
+      <div className="grid gap-6 xl:grid-cols-[280px_1fr]">
+        <aside className="rounded-3xl border border-muted/70 bg-background/80 p-6 shadow-sm">
+          <div className="mb-6 space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">Admin Panel</p>
+            <h1 className="text-3xl font-semibold text-foreground">Администрирование</h1>
+            <p className="text-sm text-muted-foreground">Реальные данные из backend. Только доступ для admin.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="secondary">{itemCount} items</Badge>
-            <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries([`admin-${section}`])}>
-              Refresh
-            </Button>
+
+          <div className="space-y-3">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                className={`flex w-full flex-col gap-3 rounded-3xl border px-5 py-5 text-left transition ${
+                  section === item.id
+                    ? 'border-primary bg-primary/10 text-foreground shadow-sm'
+                    : 'border-transparent bg-muted/70 text-muted-foreground hover:border-border hover:bg-muted/80'
+                }`}
+                onClick={() => setSection(item.id)}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
+                  </div>
+                  <Badge variant="secondary">{item.id === 'users' ? activeUsers.length : item.id === 'projects' ? activeProjects.length : activeComments.length}</Badge>
+                </div>
+              </button>
+            ))}
           </div>
-        </div>
+        </aside>
 
-        <div className="rounded-3xl border border-muted/70 bg-background/70 p-6 shadow-sm">
-          {section === 'users' && (
-            <UsersTable
-              users={activeUsers}
-              onDelete={(id, name) => handleDelete('users', id, name)}
-              onBlock={(id) => blockUserMutation.mutate(id)}
-              isBlocking={blockUserMutation.isLoading}
-              isDeleting={deleteUserMutation.isLoading}
-            />
-          )}
+        <section className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            {stats.map((stat) => (
+              <div key={stat.title} className="rounded-3xl border border-muted/70 bg-background/80 p-6 shadow-sm">
+                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">{stat.title}</p>
+                <p className="mt-4 text-3xl font-semibold text-foreground">{stat.value}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{stat.description}</p>
+              </div>
+            ))}
+          </div>
 
-          {section === 'projects' && (
-            <ProjectsTable
-              projects={activeProjects}
-              onDelete={(id, title) => handleDelete('projects', id, title)}
-              isDeleting={deleteProjectMutation.isLoading}
-            />
-          )}
+          <div className="rounded-3xl border border-muted/70 bg-background/80 p-6 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">{section.toUpperCase()}</p>
+                <h2 className="text-3xl font-semibold text-foreground">{navItems.find((item) => item.id === section)?.label}</h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge variant="secondary">{itemCount} items</Badge>
+                <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: [`admin-${section}`] })} disabled={isLoading}>
+                  Refresh
+                </Button>
+              </div>
+            </div>
 
-          {section === 'comments' && (
-            <CommentsTable
-              comments={activeComments}
-              onDelete={(id, text) => handleDelete('comments', id, text)}
-              isDeleting={deleteCommentMutation.isLoading}
-            />
-          )}
+            <div className="mt-6">
+              {section === 'users' && (
+                <UsersTable
+                  users={activeUsers}
+                  onDelete={(id, name) => handleDelete('users', id, name)}
+                  onBlock={(id) => blockUserMutation.mutate(id)}
+                  onUnblock={(id) => unblockUserMutation.mutate(id)}
+                  isBlocking={blockUserMutation.isLoading}
+                  isUnblocking={unblockUserMutation.isLoading}
+                  isDeleting={deleteUserMutation.isLoading}
+                />
+              )}
 
-          {usersQuery.isLoading || projectsQuery.isLoading || commentsQuery.isLoading ? (
-            <div className="mt-6 text-sm text-muted-foreground">Загрузка данных...</div>
-          ) : null}
-        </div>
-      </section>
+              {section === 'projects' && (
+                <ProjectsTable
+                  projects={activeProjects}
+                  onDelete={(id, title) => handleDelete('projects', id, title)}
+                  isDeleting={deleteProjectMutation.isLoading}
+                />
+              )}
+
+              {section === 'comments' && (
+                <CommentsTable
+                  comments={activeComments}
+                  onDelete={(id, text) => handleDelete('comments', id, text)}
+                  isDeleting={deleteCommentMutation.isLoading}
+                />
+              )}
+
+              {isLoading && (
+                <div className="mt-6 flex items-center justify-center gap-3 rounded-3xl border border-dashed border-muted/50 bg-muted/10 p-6 text-sm text-muted-foreground">
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Загрузка данных админ-панели...
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы действительно хотите удалить {deleteTarget?.type} <strong>{deleteTarget?.label}</strong>? Это действие нельзя будет отменить.
+              Вы точно хотите удалить {deleteTarget?.type} <strong>{deleteTarget?.label}</strong>? Это действие нельзя будет отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

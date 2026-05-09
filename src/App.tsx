@@ -40,7 +40,7 @@ const App = () => (
                     <Route path="/blog" element={<BlogPage />} />
                     <Route path="/internships" element={<InternshipsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Layout>

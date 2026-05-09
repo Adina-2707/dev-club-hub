@@ -267,6 +267,10 @@ class ApiService {
     return this.request(`/users/${id}/block`, 'PATCH');
   }
 
+  async unblockUser(id: string) {
+    return this.request(`/users/${id}/unblock`, 'PATCH');
+  }
+
   async getAdminComments() {
     return this.request<AdminComment[]>('/comments/admin', 'GET');
   }

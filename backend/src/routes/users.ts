@@ -195,4 +195,28 @@ router.patch('/:id/block', authenticateToken, requireRole(['admin']), async (req
   }
 });
 
+// Unblock user (admin only)
+router.patch('/:id/unblock', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res) => {
+  try {
+    const id = String(req.params.id);
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { blocked: false },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        blocked: true,
+      },
+    });
+
+    logAdminAction(req.user!.id, 'UNBLOCK_USER', id);
+    res.json({ message: 'User unblocked successfully', user });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export { router as userRoutes };
