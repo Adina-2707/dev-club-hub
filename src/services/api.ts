@@ -14,6 +14,13 @@ export interface User {
   role: 'student' | 'mentor' | 'alumni' | 'admin';
   avatar?: string;
   nickname?: string;
+  bio?: string;
+  expertise?: string;
+  github?: string;
+  linkedin?: string;
+  links?: string[];
+  achievements?: string[];
+  rating?: number;
   blocked?: boolean;
 }
 
@@ -47,6 +54,27 @@ export interface AuthResponse {
     nickname?: string;
   };
   token: string;
+}
+
+export interface AlumniStory {
+  id: string;
+  title: string;
+  content: string;
+  storyType: 'success' | 'career';
+  alumniId: string;
+  createdAt: string;
+  alumniName?: string;
+  alumniAvatar?: string;
+}
+
+export interface AlumniProfile extends User {
+  projects?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    githubLink: string;
+  }>;
+  stories?: AlumniStory[];
 }
 
 class ApiService {
@@ -264,15 +292,28 @@ class ApiService {
   }
 
   async blockUser(id: string) {
-    return this.request(`/users/${id}/block`, 'PATCH');
+    return this.request(`/users/${id}/block`, 'PUT');
   }
 
   async unblockUser(id: string) {
-    return this.request(`/users/${id}/unblock`, 'PATCH');
+    return this.request(`/users/${id}/unblock`, 'PUT');
   }
 
   async getAdminComments() {
     return this.request<AdminComment[]>('/comments/admin', 'GET');
+  }
+
+  // Mentor reviews endpoints
+  async getMentorReviews(mentorId: string) {
+    return this.request(`/mentor-reviews/${mentorId}`, 'GET');
+  }
+
+  async createMentorReview(data: Record<string, unknown>) {
+    return this.request('/mentor-reviews', 'POST', data);
+  }
+
+  async deleteMentorReview(id: string) {
+    return this.request(`/mentor-reviews/${id}`, 'DELETE');
   }
 
   // Notifications endpoints
@@ -282,6 +323,28 @@ class ApiService {
 
   async markNotificationAsRead(id: string) {
     return this.request(`/notifications/${id}/read`, 'PUT');
+  }
+
+  // Alumni endpoints
+  async getAlumniProfile(alumniId: string) {
+    return this.request<AlumniProfile>(`/alumni/${alumniId}`, 'GET');
+  }
+
+  async getAlumniStories(alumniId?: string) {
+    const endpoint = alumniId ? `/alumni-stories?alumniId=${alumniId}` : '/alumni-stories';
+    return this.request<AlumniStory[]>(endpoint, 'GET');
+  }
+
+  async createAlumniStory(data: Record<string, unknown>) {
+    return this.request('/alumni-stories', 'POST', data);
+  }
+
+  async updateAlumniStory(id: string, data: Record<string, unknown>) {
+    return this.request(`/alumni-stories/${id}`, 'PUT', data);
+  }
+
+  async deleteAlumniStory(id: string) {
+    return this.request(`/alumni-stories/${id}`, 'DELETE');
   }
 
   // Health check

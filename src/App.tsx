@@ -15,6 +15,8 @@ import TeamsPage from "./pages/TeamsPage";
 import BlogPage from "./pages/BlogPage";
 import InternshipsPage from "./pages/InternshipsPage";
 import ProfilePage from "./pages/ProfilePage";
+import MentorProfilePage from "./pages/MentorProfilePage";
+import AlumniProfilePage from "./pages/AlumniProfilePage";
 import AdminPage from "./pages/AdminPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
@@ -40,6 +42,8 @@ const App = () => (
                     <Route path="/blog" element={<BlogPage />} />
                     <Route path="/internships" element={<InternshipsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/mentor/:mentorId" element={<MentorProfilePage />} />
+                    <Route path="/alumni/:alumniId" element={<AlumniProfilePage />} />
                     <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>

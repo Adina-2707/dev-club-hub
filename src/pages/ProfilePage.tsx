@@ -4,8 +4,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { RoleBadge } from "@/components/RoleBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
+import { MentorReviewList } from "@/components/MentorReviewList";
 import { Navigate } from "react-router-dom";
-import { Code2, Briefcase, Github, ExternalLink, Heart } from "lucide-react";
+import { Code2, Briefcase, Github, ExternalLink, Heart, Star } from "lucide-react";
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = useAuth();
@@ -104,6 +105,15 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {user?.role === 'mentor' && (
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+              <Star className="h-5 w-5 text-primary" /> {t("profile.mentorReviews")}
+            </h2>
+            <MentorReviewList mentorId={user.id} />
+          </div>
+        )}
       </div>
 
     </div>
