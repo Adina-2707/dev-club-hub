@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, type User, type AdminProject, type AdminComment } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -36,6 +38,7 @@ export default function AdminPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const usersQuery = useQuery({
     queryKey: ['admin-users'],
@@ -56,27 +59,97 @@ export default function AdminPage() {
 
   const deleteUserMutation = useMutation({
     mutationFn: (id: string) => apiService.deleteUser(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast({
+        title: "Пользователь удален",
+        description: "Пользователь был успешно удален из системы.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: "Не удалось удалить пользователя. Попробуйте еще раз.",
+        variant: "destructive",
+      });
+    },
   });
 
   const blockUserMutation = useMutation({
     mutationFn: (id: string) => apiService.blockUser(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast({
+        title: "Пользователь заблокирован",
+        description: "Пользователь был успешно заблокирован.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка блокировки",
+        description: "Не удалось заблокировать пользователя. Попробуйте еще раз.",
+        variant: "destructive",
+      });
+    },
   });
 
   const unblockUserMutation = useMutation({
     mutationFn: (id: string) => apiService.unblockUser(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast({
+        title: "Пользователь разблокирован",
+        description: "Пользователь был успешно разблокирован.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка разблокировки",
+        description: "Не удалось разблокировать пользователя. Попробуйте еще раз.",
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteProjectMutation = useMutation({
     mutationFn: (id: string) => apiService.deleteProject(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-projects'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-projects'] });
+      toast({
+        title: "Проект удален",
+        description: "Проект был успешно удален из системы.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: "Не удалось удалить проект. Попробуйте еще раз.",
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteCommentMutation = useMutation({
     mutationFn: (id: string) => apiService.deleteComment(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-comments'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-comments'] });
+      toast({
+        title: "Комментарий удален",
+        description: "Комментарий был успешно удален.",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ошибка удаления",
+        description: "Не удалось удалить комментарий. Попробуйте еще раз.",
+        variant: "destructive",
+      });
+    },
   });
 
   const activeUsers = usersQuery.data ?? [];
@@ -188,39 +261,43 @@ export default function AdminPage() {
             </div>
 
             <div className="mt-6">
-              {section === 'users' && (
-                <UsersTable
-                  users={activeUsers}
-                  onDelete={(id, name) => handleDelete('users', id, name)}
-                  onBlock={(id) => blockUserMutation.mutate(id)}
-                  onUnblock={(id) => unblockUserMutation.mutate(id)}
-                  isBlocking={blockUserMutation.isLoading}
-                  isUnblocking={unblockUserMutation.isLoading}
-                  isDeleting={deleteUserMutation.isLoading}
-                />
-              )}
-
-              {section === 'projects' && (
-                <ProjectsTable
-                  projects={activeProjects}
-                  onDelete={(id, title) => handleDelete('projects', id, title)}
-                  isDeleting={deleteProjectMutation.isLoading}
-                />
-              )}
-
-              {section === 'comments' && (
-                <CommentsTable
-                  comments={activeComments}
-                  onDelete={(id, text) => handleDelete('comments', id, text)}
-                  isDeleting={deleteCommentMutation.isLoading}
-                />
-              )}
-
-              {isLoading && (
-                <div className="mt-6 flex items-center justify-center gap-3 rounded-3xl border border-dashed border-muted/50 bg-muted/10 p-6 text-sm text-muted-foreground">
-                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Загрузка данных админ-панели...
+              {isLoading ? (
+                <div className="mt-6 flex min-h-[280px] items-center justify-center rounded-3xl border border-dashed border-muted/50 bg-muted/10 p-10 text-sm text-muted-foreground">
+                  <div className="flex flex-col items-center gap-3">
+                    <Spinner size="lg" className="text-primary" />
+                    <p>Загрузка данных админ-панели...</p>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  {section === 'users' && (
+                    <UsersTable
+                      users={activeUsers}
+                      onDelete={(id, name) => handleDelete('users', id, name)}
+                      onBlock={(id) => blockUserMutation.mutate(id)}
+                      onUnblock={(id) => unblockUserMutation.mutate(id)}
+                      isBlocking={blockUserMutation.isLoading}
+                      isUnblocking={unblockUserMutation.isLoading}
+                      isDeleting={deleteUserMutation.isLoading}
+                    />
+                  )}
+
+                  {section === 'projects' && (
+                    <ProjectsTable
+                      projects={activeProjects}
+                      onDelete={(id, title) => handleDelete('projects', id, title)}
+                      isDeleting={deleteProjectMutation.isLoading}
+                    />
+                  )}
+
+                  {section === 'comments' && (
+                    <CommentsTable
+                      comments={activeComments}
+                      onDelete={(id, text) => handleDelete('comments', id, text)}
+                      isDeleting={deleteCommentMutation.isLoading}
+                    />
+                  )}
+                </>
               )}
             </div>
           </div>

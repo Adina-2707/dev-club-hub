@@ -165,7 +165,7 @@ const translations = {
   "profile.editProfile": { ru: "Редактировать профиль", en: "Edit Profile" },
   "profile.save": { ru: "Сохранить", en: "Save" },
   "profile.cancel": { ru: "Отмена", en: "Cancel" },
-  "profile.applications": { ru: "Мои заявки на стажировки", en: "My Internship Applications" },
+  "profile.applications": { ru: "Мои отклики", en: "My Responses" },
   "profile.noApplications": { ru: "Нет заявок", en: "No applications" },
   "profile.noApplicationsDesc": { ru: "Подайте заявку на интересную стажировку!", en: "Apply for an interesting internship!" },
   "profile.noMessage": { ru: "Без сообщения", en: "No message" },

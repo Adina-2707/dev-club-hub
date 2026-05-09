@@ -6,6 +6,7 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/EmptyState";
 import { Navigate } from "react-router-dom";
 import { User, Code2, Users, Briefcase, BookOpen, MessageCircle, Github, ExternalLink, Heart, Bookmark, Send, Edit, Save, X, CheckCircle, XCircle, Clock } from "lucide-react";
