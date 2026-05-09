@@ -24,8 +24,8 @@ model User {
   github       String?
   linkedin     String?
   rating       Float?
-  achievements String[]?
-  links        String[]?
+  achievements String[]
+  links        String[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -35,6 +35,8 @@ model User {
   teamMemberships  TeamMember[]
   projectMemberships ProjectMember[]
   blogPosts        BlogPost[]
+  alumniStories    AlumniStory[]   @relation("AlumniStoryAuthor")
+  jobPosts         JobPost[]       @relation("JobPostAuthor")
   internships      Internship[]
   comments         Comment[]
   likes            Like[]
@@ -43,6 +45,8 @@ model User {
   mentorRequestsSent MentorRequest[] @relation("MentorRequestStudent")
   mentorRequestsReceived MentorRequest[] @relation("MentorRequestMentor")
   mentorReviews       MentorReview[] @relation("MentorReviewMentor")
+  mentorReviewsWritten MentorReview[] @relation("MentorReviewUser")
+  mentorSchedules     MentorSchedule[] @relation("MentorScheduleMentor")
   notifications    Notification[]
 }
 
@@ -70,6 +74,18 @@ model MentorReview {
 
   mentor User @relation("MentorReviewMentor", fields: [mentorId], references: [id], onDelete: Cascade)
   user   User @relation("MentorReviewUser", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MentorSchedule {
+  id        String   @id @default(cuid())
+  mentorId  String
+  title     String?
+  startTime DateTime
+  endTime   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mentor User @relation("MentorScheduleMentor", fields: [mentorId], references: [id], onDelete: Cascade)
 }
 
 model Project {
@@ -151,6 +167,30 @@ model BlogPost {
 
   // Relations
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model AlumniStory {
+  id          String   @id @default(cuid())
+  alumniId    String
+  title       String
+  content     String
+  storyType   String   @default("success") // "success" | "career"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author User @relation("AlumniStoryAuthor", fields: [alumniId], references: [id], onDelete: Cascade)
+}
+
+model JobPost {
+  id          String   @id @default(cuid())
+  alumniId    String
+  title       String
+  description String
+  postType    String   @default("job") // "job" | "internship" | "referral"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author User @relation("JobPostAuthor", fields: [alumniId], references: [id], onDelete: Cascade)
 }
 
 model Internship {
