@@ -1,10 +1,16 @@
 import express from 'express';
+import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
 import { logAdminAction } from '../utils/adminLog';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+const updateBlockStatusSchema = z.object({
+  status: z.enum(['block', 'unblock']),
+  reason: z.string().optional(),
+});
 
 // Get user profile by ID
 router.get('/:id', async (req, res) => {
@@ -147,26 +153,44 @@ router.delete('/:id', authenticateToken, requireRole(['admin']), async (req: Aut
   }
 });
 
-// Block user (admin only)
+// Block/Unblock user (admin only)
 router.patch('/:id/block', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res) => {
   try {
     const id = String(req.params.id);
+    const { status, reason } = updateBlockStatusSchema.parse(req.body);
 
-    const user = await prisma.user.update({
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const updateData: { blocked: boolean; banReason: string | null } = {
+      blocked: status === 'block',
+      banReason: status === 'block' ? (reason || null) : null,
+    };
+
+    const updatedUser = await prisma.user.update({
       where: { id },
-      data: { blocked: true },
+      data: updateData,
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
         blocked: true,
+        banReason: true,
       },
     });
 
-    logAdminAction(req.user!.id, 'BLOCK_USER', id);
-    res.json({ message: 'User blocked successfully', user });
+    const actionType = status === 'block' ? 'BLOCK_USER' : 'UNBLOCK_USER';
+    logAdminAction(req.user!.id, actionType, id);
+    
+    const message = status === 'block' ? 'User blocked successfully' : 'User unblocked successfully';
+    res.json({ message, user: updatedUser });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });

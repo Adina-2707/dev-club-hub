@@ -81,6 +81,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
           data: {
             userId: project.authorId,
             type: 'comment',
+            actionType: 'COMMENT',
+            actionUserId: req.user!.id,
             message: `New comment on your project "${project.title}"`,
             relatedId: targetId,
           },
@@ -96,6 +98,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
           data: {
             userId: blogPost.authorId,
             type: 'comment',
+            actionType: 'COMMENT',
+            actionUserId: req.user!.id,
             message: `New comment on your blog post "${blogPost.title}"`,
             relatedId: targetId,
           },

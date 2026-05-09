@@ -37,6 +37,8 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
         data: {
           userId: project.authorId,
           type: 'like',
+          actionType: 'LIKE',
+          actionUserId: userId,
           message: `Your project "${project.title}" was liked`,
           relatedId: projectId,
         },
