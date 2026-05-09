@@ -16,6 +16,11 @@ const registerSchema = z.object({
   role: z.enum(['student', 'mentor', 'alumni']),
   nickname: z.string().optional(),
   avatar: z.string().optional(),
+  bio: z.string().optional(),
+  expertise: z.enum(['AI', 'Web', 'Mobile']).optional(),
+  github: z.string().url().optional(),
+  linkedin: z.string().url().optional(),
+  rating: z.number().min(0).max(5).optional(),
 });
 
 const loginSchema = z.object({
@@ -27,12 +32,17 @@ const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
   nickname: z.string().optional(),
   avatar: z.string().optional(),
+  bio: z.string().optional(),
+  expertise: z.enum(['AI', 'Web', 'Mobile']).optional(),
+  github: z.string().url().optional(),
+  linkedin: z.string().url().optional(),
+  rating: z.number().min(0).max(5).optional(),
 });
 
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role, nickname, avatar } = registerSchema.parse(req.body);
+    const { name, email, password, role, nickname, avatar, bio, expertise, github, linkedin, rating } = registerSchema.parse(req.body);
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -49,6 +59,11 @@ router.post('/register', async (req, res) => {
         role,
         nickname,
         avatar,
+        bio,
+        expertise,
+        github,
+        linkedin,
+        rating,
       },
       select: {
         id: true,
@@ -57,6 +72,11 @@ router.post('/register', async (req, res) => {
         role: true,
         nickname: true,
         avatar: true,
+        bio: true,
+        expertise: true,
+        github: true,
+        linkedin: true,
+        rating: true,
       },
     });
 
@@ -154,6 +174,11 @@ router.put('/me', authenticateToken, async (req: AuthRequest, res) => {
         role: true,
         nickname: true,
         avatar: true,
+        bio: true,
+        expertise: true,
+        github: true,
+        linkedin: true,
+        rating: true,
       },
     });
 

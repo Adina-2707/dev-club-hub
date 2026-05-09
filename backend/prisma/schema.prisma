@@ -18,9 +18,16 @@ model User {
   role      String   // "student" | "mentor" | "alumni" | "admin"
   blocked   Boolean  @default(false)
   avatar    String?
-  nickname  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  nickname     String?
+  bio          String?
+  expertise    String?
+  github       String?
+  linkedin     String?
+  rating       Float?
+  achievements String[]?
+  links        String[]?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   projects         Project[]
@@ -33,7 +40,36 @@ model User {
   likes            Like[]
   bookmarks        Bookmark[]
   applications     InternshipApplication[]
+  mentorRequestsSent MentorRequest[] @relation("MentorRequestStudent")
+  mentorRequestsReceived MentorRequest[] @relation("MentorRequestMentor")
+  mentorReviews       MentorReview[] @relation("MentorReviewMentor")
   notifications    Notification[]
+}
+
+model MentorRequest {
+  id         String   @id @default(cuid())
+  studentId  String
+  mentorId   String
+  message    String?
+  status     String   @default("pending") // "pending" | "accepted" | "rejected"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  student User @relation("MentorRequestStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  mentor  User @relation("MentorRequestMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+}
+
+model MentorReview {
+  id        String   @id @default(cuid())
+  mentorId  String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mentor User @relation("MentorReviewMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  user   User @relation("MentorReviewUser", fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Project {

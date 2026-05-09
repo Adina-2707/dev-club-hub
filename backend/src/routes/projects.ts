@@ -67,6 +67,11 @@ router.get('/', async (req, res) => {
       })
     );
 
+    const sort = String(req.query.sort || '').toLowerCase();
+    if (sort === 'likes') {
+      formattedProjects.sort((a, b) => b.likesCount - a.likesCount);
+    }
+
     res.json(formattedProjects);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
