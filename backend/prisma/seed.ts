@@ -56,6 +56,19 @@ async function main() {
     },
   });
 
+  // Create personal user account
+  const personalUser = await prisma.user.upsert({
+    where: { email: 'adinatest43@gmail.com' },
+    update: {},
+    create: {
+      name: 'Adina Test',
+      email: 'adinatest43@gmail.com',
+      password: hashedPassword,
+      role: 'student',
+      nickname: 'AdinaDev',
+    },
+  });
+
   // Create sample projects
   const project1 = await prisma.project.upsert({
     where: { id: 'p1' },
