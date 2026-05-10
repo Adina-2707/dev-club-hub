@@ -8,6 +8,7 @@ const translations = {
   "nav.projects": { ru: "Проекты", en: "Projects" },
   "nav.blog": { ru: "Блог", en: "Blog" },
   "nav.internships": { ru: "Стажировки", en: "Internships" },
+  "nav.alumniStories": { ru: "Истории", en: "Stories" },
   "nav.teams": { ru: "Команды", en: "Teams" },
   "nav.profile": { ru: "Профиль", en: "Profile" },
   "nav.login": { ru: "Войти", en: "Login" },
@@ -116,6 +117,11 @@ const translations = {
   "alumni.linkedin": { ru: "LinkedIn", en: "LinkedIn" },
   "alumni.emptyProfileTitle": { ru: "Профиль пока пуст", en: "No profile content yet" },
   "alumni.emptyProfileDesc": { ru: "Этот выпускник ещё не добавил проекты, достижения или истории.", en: "This alumni profile has no projects, achievements, or stories yet." },
+  "alumni.storiesFeedDesc": { ru: "Вдохновляющие истории успеха и карьерные пути нашего сообщества выпускников", en: "Inspiring success stories and career paths from our alumni community" },
+  "alumni.shareStory": { ru: "Поделиться историей", en: "Share Your Story" },
+  "alumni.noStoriesYet": { ru: "Истории ещё не добавлены", en: "No stories yet" },
+  "alumni.successStory": { ru: "История успеха", en: "Success Story" },
+  "alumni.careerPath": { ru: "Карьерный путь", en: "Career Path" },
 
   // Blog
   "blog.title": { ru: "Блог", en: "Blog" },
