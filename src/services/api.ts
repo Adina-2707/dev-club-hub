@@ -1,6 +1,6 @@
-const rawApiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3002').trim();
+const rawApiBaseUrl = import.meta.env.VITE_API_URL?.trim() ?? '';
 const baseUrl = rawApiBaseUrl.replace(/\/+$/, '');
-const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+const API_BASE_URL = baseUrl ? (baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`) : '/api';
 
 export interface ApiResponse<T> {
   data?: T;

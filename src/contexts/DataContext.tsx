@@ -171,9 +171,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addProject = async (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) => {
     try {
       const project = await apiService.createProject(p);
-      setProjects((prev) => [project, ...prev]);
+      setProjects((prev) => [
+        {
+          likes: [],
+          bookmarks: [],
+          ...project,
+        } as Project,
+        ...prev,
+      ]);
     } catch (error) {
       console.error('Failed to create project:', error);
+      throw error;
     }
   };
 

@@ -24,11 +24,37 @@ export default function ProjectsPage() {
 
   const canCreate = isAuthenticated && user?.role === "student";
 
-  const handleCreate = (e: React.FormEvent) => {
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState(false);
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    addProject({ title, description, githubLink, authorId: user.id, authorName: user.nickname || user.name });
-    setTitle(""); setDescription(""); setGithubLink(""); setOpen(false);
+
+    setCreateError(null);
+    setCreateLoading(true);
+
+    try {
+      await addProject({
+        title,
+        description,
+        githubLink,
+        authorId: user.id,
+        authorName: user.nickname || user.name,
+      });
+
+      setTitle("");
+      setDescription("");
+      setGithubLink("");
+      setOpen(false);
+      setCreateSuccess(true);
+      setTimeout(() => setCreateSuccess(false), 3000);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : 'Failed to create project');
+    } finally {
+      setCreateLoading(false);
+    }
   };
 
   const handleComment = (projectId: string) => {
@@ -54,10 +80,22 @@ export default function ProjectsPage() {
             <DialogContent className="rounded-2xl">
               <DialogHeader><DialogTitle>{t("projects.create")}</DialogTitle></DialogHeader>
               <form onSubmit={handleCreate} className="space-y-4">
+                {createError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {createError}
+                  </div>
+                )}
+                {createSuccess && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    {t("projects.createdSuccess") || 'Project created successfully!'}
+                  </div>
+                )}
                 <Input placeholder={t("projects.titleField")} value={title} onChange={(e) => setTitle(e.target.value)} required className="h-11" />
                 <Textarea placeholder={t("projects.description")} value={description} onChange={(e) => setDescription(e.target.value)} required />
                 <Input placeholder={t("projects.githubLink")} value={githubLink} onChange={(e) => setGithubLink(e.target.value)} required className="h-11" />
-                <Button type="submit" className="w-full gradient-btn text-primary-foreground border-0 h-11">{t("projects.createBtn")}</Button>
+                <Button type="submit" disabled={createLoading} className="w-full gradient-btn text-primary-foreground border-0 h-11">
+                  {createLoading ? (t("projects.creating") || 'Creating...') : (t("projects.createBtn") || 'Create')}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
