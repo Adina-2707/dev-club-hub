@@ -4,6 +4,8 @@ import { apiService, type User, type AdminProject, type AdminComment } from '@/s
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -37,6 +39,9 @@ export default function AdminPage() {
   const [section, setSection] = useState<Section>('users');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
+  const [blockModalOpen, setBlockModalOpen] = useState(false);
+  const [blockReason, setBlockReason] = useState('');
+  const [blockTarget, setBlockTarget] = useState<{ id: string; name: string } | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -77,7 +82,7 @@ export default function AdminPage() {
   });
 
   const blockUserMutation = useMutation({
-    mutationFn: (id: string) => apiService.blockUser(id),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) => apiService.blockUser(id, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast({
@@ -165,6 +170,24 @@ export default function AdminPage() {
   const handleDelete = (type: Section, id: string, label: string) => {
     setDeleteTarget({ type, id, label });
     setConfirmOpen(true);
+  };
+
+  const handleOpenBlock = (id: string, name: string) => {
+    setBlockTarget({ id, name });
+    setBlockReason('');
+    setBlockModalOpen(true);
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!blockTarget) return;
+    try {
+      await blockUserMutation.mutateAsync({ id: blockTarget.id, reason: blockReason.trim() });
+      setBlockModalOpen(false);
+      setBlockTarget(null);
+      setBlockReason('');
+    } catch {
+      // keep modal open to let admin retry or change reason
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -274,7 +297,7 @@ export default function AdminPage() {
                     <UsersTable
                       users={activeUsers}
                       onDelete={(id, name) => handleDelete('users', id, name)}
-                      onBlock={(id) => blockUserMutation.mutate(id)}
+                      onBlock={(id, name) => handleOpenBlock(id, name)}
                       onUnblock={(id) => unblockUserMutation.mutate(id)}
                       isBlocking={blockUserMutation.isLoading}
                       isUnblocking={unblockUserMutation.isLoading}
@@ -316,6 +339,43 @@ export default function AdminPage() {
             <AlertDialogCancel>Отмена</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete}>
               {deleteTarget?.type === 'users' ? 'Удалить пользователя' : deleteTarget?.type === 'projects' ? 'Удалить проект' : 'Удалить комментарий'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={blockModalOpen} onOpenChange={setBlockModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Блокировка пользователя</AlertDialogTitle>
+            <AlertDialogDescription>
+              Укажите причину блокировки для <strong>{blockTarget?.name}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 px-4 pb-4">
+            <div className="space-y-2">
+              <Label htmlFor="block-reason">Причина блокировки</Label>
+              <Input
+                id="block-reason"
+                value={blockReason}
+                onChange={(e) => setBlockReason(e.target.value)}
+                placeholder="Например: нарушение правил, спам, недобросовестное поведение"
+                className="h-12"
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setBlockModalOpen(false);
+                setBlockTarget(null);
+                setBlockReason('');
+              }}
+            >
+              Отмена
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBlock} disabled={!blockReason.trim()}>
+              Заблокировать пользователя
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

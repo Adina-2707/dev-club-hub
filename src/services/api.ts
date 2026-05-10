@@ -22,6 +22,7 @@ export interface User {
   achievements?: string[];
   rating?: number;
   blocked?: boolean;
+  banReason?: string | null;
 }
 
 export interface AdminProject {
@@ -122,6 +123,8 @@ class ApiService {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
       let errorMessage: unknown = errorData.error;
+      const responseError = errorData as { banReason?: string | null };
+      const banReason = responseError.banReason;
 
       if (Array.isArray(errorMessage)) {
         errorMessage = errorMessage.map((item) => {
@@ -134,7 +137,8 @@ class ApiService {
         errorMessage = JSON.stringify(errorMessage);
       }
 
-      throw new Error(typeof errorMessage === 'string' && errorMessage ? errorMessage : `HTTP ${response.status}`);
+      const message = typeof errorMessage === 'string' && errorMessage ? errorMessage : `HTTP ${response.status}`;
+      throw new Error(banReason ? `${message}: ${banReason}` : message);
     }
 
     return response.json();
@@ -329,8 +333,8 @@ class ApiService {
     return this.request(`/users/${id}`, 'DELETE');
   }
 
-  async blockUser(id: string) {
-    return this.patch(`/users/${id}/block`, { status: 'block' });
+  async blockUser(id: string, reason?: string) {
+    return this.patch(`/users/${id}/block`, { status: 'block', reason });
   }
 
   async unblockUser(id: string) {

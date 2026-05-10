@@ -235,7 +235,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        {user?.blocked ? (
+          <div className="flex min-h-[calc(100vh-14rem)] items-center justify-center px-4 py-10">
+            <div className="w-full max-w-2xl rounded-3xl border border-destructive/30 bg-destructive/5 p-10 text-center shadow-sm">
+              <span className="inline-flex rounded-full bg-destructive/10 px-3 py-1 text-sm font-semibold text-destructive mb-4">Вы заблокированы</span>
+              <h1 className="text-3xl font-semibold text-foreground mb-4">Доступ ограничен</h1>
+              <p className="text-base text-muted-foreground mb-6">
+                {user.banReason ? (
+                  <>Причина блокировки: <span className="font-medium text-foreground">{user.banReason}</span></>
+                ) : (
+                  'Причина блокировки не указана. Обратитесь к администратору.'
+                )}
+              </p>
+              <Button variant="outline" size="lg" onClick={handleLogout}>
+                Выйти
+              </Button>
+            </div>
+          </div>
+        ) : (
+          children
+        )}
+      </main>
 
       <footer className="border-t bg-muted/30 py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">

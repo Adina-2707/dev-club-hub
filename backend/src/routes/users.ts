@@ -123,6 +123,7 @@ router.get('/', authenticateToken, requireRole(['admin']), async (req: AuthReque
         nickname: true,
         avatar: true,
         blocked: true,
+        banReason: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },

@@ -5,7 +5,7 @@ import type { User } from '@/services/api';
 interface UsersTableProps {
   users: User[];
   onDelete: (id: string, name: string) => void;
-  onBlock: (id: string) => void;
+  onBlock: (id: string, name: string) => void;
   onUnblock: (id: string) => void;
   isBlocking: boolean;
   isUnblocking: boolean;
@@ -47,9 +47,14 @@ export function UsersTable({ users, onDelete, onBlock, onUnblock, isBlocking, is
                 <td className="px-4 py-4">
                   <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
                 </td>
-                <td className="px-4 py-4">
+                <td className="px-4 py-4 space-y-2">
                   {user.blocked ? (
-                    <Badge variant="destructive">Заблокирован</Badge>
+                    <div className="space-y-1">
+                      <Badge variant="destructive">Заблокирован</Badge>
+                      {user.banReason ? (
+                        <p className="text-xs text-muted-foreground">Причина: {user.banReason}</p>
+                      ) : null}
+                    </div>
                   ) : (
                     <Badge variant="success">Активен</Badge>
                   )}
@@ -64,7 +69,7 @@ export function UsersTable({ users, onDelete, onBlock, onUnblock, isBlocking, is
                         Unblock
                       </Button>
                     ) : (
-                      <Button variant="warning" size="sm" onClick={() => onBlock(user.id)} disabled={isBlocking}>
+                      <Button variant="warning" size="sm" onClick={() => onBlock(user.id, user.name || user.nickname || 'Пользователь')} disabled={isBlocking}>
                         Block
                       </Button>
                     )}

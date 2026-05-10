@@ -15,6 +15,8 @@ export interface User {
   github?: string;
   linkedin?: string;
   rating?: number;
+  blocked?: boolean;
+  banReason?: string | null;
 }
 
 interface AuthContextType {
@@ -54,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             github: response.github,
             linkedin: response.linkedin,
             rating: response.rating,
+            blocked: response.blocked,
+            banReason: response.banReason,
           });
         } catch (err) {
           localStorage.removeItem("token");
@@ -83,6 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         github: response.user.github,
         linkedin: response.user.linkedin,
         rating: response.user.rating,
+        blocked: response.user.blocked,
+        banReason: response.user.banReason,
+        blocked: response.user.blocked,
+        banReason: response.user.banReason,
       });
       return true;
     } catch (err) {

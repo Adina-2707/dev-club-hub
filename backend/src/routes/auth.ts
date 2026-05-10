@@ -107,7 +107,7 @@ router.post('/login', async (req, res) => {
     }
 
     if (user.blocked) {
-      return res.status(403).json({ error: 'User is blocked' });
+      return res.status(403).json({ error: 'User is blocked', banReason: user.banReason || null });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -150,6 +150,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
         linkedin: true,
         rating: true,
         blocked: true,
+        banReason: true,
       },
     });
 
