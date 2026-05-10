@@ -110,6 +110,10 @@ const translations = {
   "alumni.noContent": { ru: "Нет контента", en: "No content yet" },
   "alumni.noContentDesc": { ru: "Этот профиль выпускника пока не содержит проектов или историй.", en: "This alumni profile does not have any projects or stories yet." },
   "alumni.noSocialLinks": { ru: "Нет ссылок", en: "No social links yet" },
+  "alumni.noSocialLinksDesc": { ru: "Этот выпускник ещё не добавил социальные ссылки.", en: "This alumni has not added any social links yet." },
+  "alumni.socialLinks": { ru: "Социальные ссылки", en: "Social Links" },
+  "alumni.github": { ru: "GitHub", en: "GitHub" },
+  "alumni.linkedin": { ru: "LinkedIn", en: "LinkedIn" },
   "alumni.emptyProfileTitle": { ru: "Профиль пока пуст", en: "No profile content yet" },
   "alumni.emptyProfileDesc": { ru: "Этот выпускник ещё не добавил проекты, достижения или истории.", en: "This alumni profile has no projects, achievements, or stories yet." },
 
