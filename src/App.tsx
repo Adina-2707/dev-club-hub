@@ -46,7 +46,7 @@ const App = () => (
                     <Route path="/posts/:id" element={<BlogPostPage />} />
                     <Route path="/internships" element={<InternshipsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/mentor/:mentorId" element={<MentorProfilePage />} />
+                    <Route path="/mentor/:id" element={<MentorProfilePage />} />
                     <Route path="/alumni/:alumniId" element={<AlumniProfilePage />} />
                     <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
