@@ -6,13 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
 import { MentorReviewList } from "@/components/MentorReviewList";
 import MentorSchedule from "@/components/MentorSchedule";
+import { ProfileEditModal } from "@/components/ProfileEditModal";
 import { Navigate } from "react-router-dom";
-import { Code2, Briefcase, Github, Linkedin, ExternalLink, Heart, Star } from "lucide-react";
+import { useState } from "react";
+import { Code2, Briefcase, Github, Linkedin, ExternalLink, Heart, Star, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
   const { user, isAuthenticated } = useAuth();
   const { projects, internships, applications } = useData();
   const { t } = useLanguage();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
 
@@ -37,13 +41,20 @@ export default function ProfilePage() {
             <span className="text-2xl font-bold text-primary-foreground">{user?.name?.[0] || 'U'}</span>
           )}
         </div>
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl md:text-3xl font-bold">{user?.nickname || user?.name || 'Demo User'}</h1>
             <RoleBadge role={user?.role || 'student'} size="md" />
           </div>
           <p className="text-muted-foreground">{user?.email || 'demo@example.com'}</p>
         </div>
+        <Button 
+          onClick={() => setIsEditModalOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Edit className="h-4 w-4" />
+          {t('profile.editProfile') || 'Edit Profile'}
+        </Button>
       </div>
 
       <div className="space-y-10">
@@ -236,8 +247,13 @@ export default function ProfilePage() {
 
             <div className="mt-10">
               <h2 className="text-xl font-bold mb-5">
-                {t('mentor.schedule.title') || 'Consultation Schedule'}
-              </h2>
+      <ProfileEditModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => {
+          // Refresh page or update UI as needed
+        }}
+      />              </h2>
               <MentorSchedule mentorId={user.id} isMentor />
             </div>
           </>

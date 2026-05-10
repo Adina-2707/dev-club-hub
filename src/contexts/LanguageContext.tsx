@@ -122,6 +122,15 @@ const translations = {
   "alumni.noStoriesYet": { ru: "Истории ещё не добавлены", en: "No stories yet" },
   "alumni.successStory": { ru: "История успеха", en: "Success Story" },
   "alumni.careerPath": { ru: "Карьерный путь", en: "Career Path" },
+  "profile.fullName": { ru: "Полное имя", en: "Full Name" },
+  "profile.nickname": { ru: "Никнейм", en: "Nickname" },
+  "profile.avatarUrl": { ru: "URL аватара", en: "Avatar URL" },
+  "profile.bio": { ru: "Биография", en: "Bio" },
+  "profile.expertise": { ru: "Экспертиза", en: "Expertise" },
+  "profile.selectExpertise": { ru: "Выберите экспертизу", en: "Select expertise" },
+  "profile.nameRequired": { ru: "Имя обязательно", en: "Name is required" },
+  "common.saving": { ru: "Сохранение...", en: "Saving..." },
+  "common.save": { ru: "Сохранить", en: "Save" },
 
   // Blog
   "blog.title": { ru: "Блог", en: "Blog" },

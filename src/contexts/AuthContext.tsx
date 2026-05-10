@@ -10,6 +10,11 @@ export interface User {
   role: UserRole;
   avatar?: string;
   nickname?: string;
+  bio?: string;
+  expertise?: string;
+  github?: string;
+  linkedin?: string;
+  rating?: number;
 }
 
 interface AuthContextType {
@@ -44,6 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: response.role,
             avatar: response.avatar,
             nickname: response.nickname,
+            bio: response.bio,
+            expertise: response.expertise,
+            github: response.github,
+            linkedin: response.linkedin,
+            rating: response.rating,
           });
         } catch (err) {
           localStorage.removeItem("token");
@@ -68,6 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: response.user.role as UserRole,
         avatar: response.user.avatar,
         nickname: response.user.nickname,
+        bio: response.user.bio,
+        expertise: response.user.expertise,
+        github: response.user.github,
+        linkedin: response.user.linkedin,
+        rating: response.user.rating,
       });
       return true;
     } catch (err) {
@@ -89,6 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: response.user.role as UserRole,
           avatar: response.user.avatar,
           nickname: response.user.nickname,
+          bio: response.user.bio,
+          expertise: response.user.expertise,
+          github: response.user.github,
+          linkedin: response.user.linkedin,
+          rating: response.user.rating,
         });
         return true;
       } catch (err) {
