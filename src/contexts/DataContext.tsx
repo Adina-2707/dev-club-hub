@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { apiService } from "@/services/api";
 
 export interface Project {
   id: string;
@@ -81,11 +82,11 @@ interface DataContextType {
   comments: Comment[];
   applications: InternshipApplication[];
   notifications: Notification[];
-  addProject: (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) => void;
-  addTeam: (t: Omit<Team, "id" | "createdAt">) => void;
-  joinTeam: (teamId: string, member: { id: string; name: string }) => void;
-  leaveTeam: (teamId: string, memberId: string) => void;
-  updateTeamMemberRole: (teamId: string, memberId: string, role: "leader" | "member") => void;
+  addProject: (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) => Promise<void>;
+  addTeam: (t: Omit<Team, "id" | "createdAt">) => Promise<void>;
+  joinTeam: (teamId: string, member: { id: string; name: string }) => Promise<void>;
+  leaveTeam: (teamId: string, memberId: string) => Promise<void>;
+  updateTeamMemberRole: (teamId: string, memberId: string, role: "leader" | "member") => Promise<void>;
   addBlogPost: (b: Omit<BlogPost, "id" | "createdAt">) => void;
   updateBlogPost: (id: string, updates: Partial<Pick<BlogPost, "title" | "content">>) => void;
   deleteBlogPost: (id: string) => void;
@@ -105,35 +106,13 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | null>(null);
 
-const sampleProjects: Project[] = [
-  { id: "p1", title: "TaskFlow App", description: "A modern task management application with drag-and-drop support.", githubLink: "https://github.com/demo/taskflow", authorId: "1", authorName: "Demo Student", likes: ["3"], bookmarks: [], createdAt: "2024-03-15" },
-  { id: "p2", title: "DevChat", description: "Real-time chat application for developer teams.", githubLink: "https://github.com/demo/devchat", authorId: "1", authorName: "Demo Student", likes: ["2", "3"], bookmarks: ["3"], createdAt: "2024-03-10" },
-];
-
-const sampleBlogPosts: BlogPost[] = [
-  { id: "b1", title: "Getting Started with React", content: "React is a powerful library for building user interfaces. In this post, we'll explore the fundamentals of React including components, state, and props. Whether you're just starting out or looking to refresh your knowledge, this guide will help you understand the core concepts that make React so popular among developers.", authorId: "2", authorName: "Demo Mentor", createdAt: "2024-03-12" },
-];
-
-const sampleInternships: Internship[] = [
-  { id: "i1", title: "Frontend Developer Intern", description: "Join our team to work on cutting-edge React applications. You'll learn best practices in modern web development.", authorId: "2", authorName: "Demo Mentor", createdAt: "2024-03-14" },
-];
-
 const sampleComments: Comment[] = [
   { id: "c1", text: "Отличный проект! Очень впечатляет.", authorId: "3", authorName: "Demo Alumni", targetId: "p1", targetType: "project", createdAt: "2024-03-16" },
 ];
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   // Initialize projects from localStorage or use sample data
-  const [projects, setProjects] = useState<Project[]>(() => {
-    try {
-      const stored = localStorage.getItem('projects');
-      return stored ? JSON.parse(stored) : sampleProjects;
-    } catch {
-      return sampleProjects;
-    }
-  });
-
-  // Initialize comments from localStorage or use sample data
+  const [projects, setProjects] = useState<Project[]>([]);
   const [comments, setComments] = useState<Comment[]>(() => {
     try {
       const stored = localStorage.getItem('comments');
@@ -143,7 +122,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
-  // Initialize notifications from localStorage
   const [notifications, setNotifications] = useState<Notification[]>(() => {
     try {
       const stored = localStorage.getItem('notifications');
@@ -154,14 +132,31 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [teams, setTeams] = useState<Team[]>([]);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(sampleBlogPosts);
-  const [internships, setInternships] = useState<Internship[]>(sampleInternships);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [internships, setInternships] = useState<Internship[]>([]);
   const [applications, setApplications] = useState<InternshipApplication[]>([]);
 
-  // Persist projects to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('projects', JSON.stringify(projects));
-  }, [projects]);
+    const loadData = async () => {
+      try {
+        const [projectsRes, teamsRes, blogPostsRes, internshipsRes] = await Promise.all([
+          apiService.getProjects(),
+          apiService.getTeams(),
+          apiService.getBlogPosts(),
+          apiService.getInternships(),
+        ]);
+
+        setProjects(projectsRes);
+        setTeams(teamsRes);
+        setBlogPosts(blogPostsRes);
+        setInternships(internshipsRes);
+      } catch (error) {
+        console.error('Failed to load content from server:', error);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // Persist comments to localStorage whenever they change
   useEffect(() => {
@@ -173,20 +168,50 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('notifications', JSON.stringify(notifications));
   }, [notifications]);
 
-  const addProject = (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) =>
-    setProjects((prev) => [...prev, { ...p, id: `p${Date.now()}`, likes: [], bookmarks: [], createdAt: new Date().toISOString().split("T")[0] }]);
+  const addProject = async (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) => {
+    try {
+      const project = await apiService.createProject(p);
+      setProjects((prev) => [project, ...prev]);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+    }
+  };
 
-  const addTeam = (t: Omit<Team, "id" | "createdAt">) =>
-    setTeams((prev) => [...prev, { ...t, id: `t${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+  const addTeam = async (t: Omit<Team, "id" | "createdAt">) => {
+    try {
+      const team = await apiService.createTeam(t);
+      setTeams((prev) => [team, ...prev]);
+    } catch (error) {
+      console.error('Failed to create team:', error);
+    }
+  };
 
-  const joinTeam = (teamId: string, member: { id: string; name: string }) =>
-    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: [...t.members, { ...member, role: "member" }] } : t)));
+  const joinTeam = async (teamId: string, member: { id: string; name: string }) => {
+    try {
+      await apiService.joinTeam(teamId, member);
+      setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: [...t.members, { ...member, role: "member" }] } : t)));
+    } catch (error) {
+      console.error('Failed to join team:', error);
+    }
+  };
 
-  const leaveTeam = (teamId: string, memberId: string) =>
-    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t)));
+  const leaveTeam = async (teamId: string, memberId: string) => {
+    try {
+      await apiService.leaveTeam(teamId);
+      setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.filter((m) => m.id !== memberId) } : t)));
+    } catch (error) {
+      console.error('Failed to leave team:', error);
+    }
+  };
 
-  const updateTeamMemberRole = (teamId: string, memberId: string, role: "leader" | "member") =>
-    setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.map((m) => (m.id === memberId ? { ...m, role } : m)) } : t)));
+  const updateTeamMemberRole = async (teamId: string, memberId: string, role: "leader" | "member") => {
+    try {
+      await apiService.updateTeamMemberRole(teamId, memberId, role);
+      setTeams((prev) => prev.map((t) => (t.id === teamId ? { ...t, members: t.members.map((m) => (m.id === memberId ? { ...m, role } : m)) } : t)));
+    } catch (error) {
+      console.error('Failed to update team member role:', error);
+    }
+  };
 
   const addInternshipApplication = (a: Omit<InternshipApplication, "id" | "createdAt">) =>
     setApplications((prev) => [...prev, { ...a, id: `a${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
@@ -207,11 +232,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       return app.id === applicationId ? { ...app, status } : app;
     }));
 
-  const addBlogPost = (b: Omit<BlogPost, "id" | "createdAt">) =>
-    setBlogPosts((prev) => [...prev, { ...b, id: `b${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+  const addBlogPost = async (b: Omit<BlogPost, "id" | "createdAt">) => {
+    try {
+      const post = await apiService.createBlogPost(b);
+      setBlogPosts((prev) => [post, ...prev]);
+    } catch (error) {
+      console.error('Failed to create blog post:', error);
+    }
+  };
 
-  const addInternship = (i: Omit<Internship, "id" | "createdAt">) =>
-    setInternships((prev) => [...prev, { ...i, id: `i${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+  const addInternship = async (i: Omit<Internship, "id" | "createdAt">) => {
+    try {
+      const internship = await apiService.createInternship(i);
+      setInternships((prev) => [internship, ...prev]);
+    } catch (error) {
+      console.error('Failed to create internship:', error);
+    }
+  };
 
   const updateInternship = (id: string, updates: Partial<Pick<Internship, "title" | "description">>) =>
     setInternships((prev) => prev.map((i) => (i.id === id ? { ...i, ...updates } : i)));

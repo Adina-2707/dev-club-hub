@@ -96,7 +96,7 @@ class ApiService {
 
   private async request<T>(
     endpoint: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
     body?: Record<string, unknown>
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -239,6 +239,10 @@ class ApiService {
 
   async leaveTeam(id: string) {
     return this.request(`/teams/${id}/leave`, 'POST');
+  }
+
+  async updateTeamMemberRole(id: string, memberId: string, data: Record<string, unknown>) {
+    return this.request(`/teams/${id}/members/${memberId}`, 'PUT', data);
   }
 
   // Blog endpoints
