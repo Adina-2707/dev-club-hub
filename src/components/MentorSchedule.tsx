@@ -38,6 +38,13 @@ export default function MentorSchedule({ mentorId, isMentor = false }: MentorSch
 
   const isOwnMentor = isMentor && user?.id === mentorId;
 
+  const isOverlappingSlot = (start: Date, end: Date) =>
+    slots.some((slot) => {
+      const slotStart = new Date(slot.startTime);
+      const slotEnd = new Date(slot.endTime);
+      return start < slotEnd && end > slotStart;
+    });
+
   // Fetch schedule slots
   useEffect(() => {
     fetchScheduleSlots();
@@ -59,7 +66,7 @@ export default function MentorSchedule({ mentorId, isMentor = false }: MentorSch
 
   const handleAddSlot = async () => {
     if (!selectedDate || !startTime || !endTime) {
-      setError('Please fill in all fields');
+      setError(t('mentor.schedule.fillFields') || 'Please fill in all fields');
       return;
     }
 
@@ -75,7 +82,14 @@ export default function MentorSchedule({ mentorId, isMentor = false }: MentorSch
       endDateTime.setHours(parseInt(endHour), parseInt(endMin), 0, 0);
 
       if (endDateTime <= startDateTime) {
-        setError('End time must be after start time');
+        setError(t('mentor.schedule.invalidTime') || 'End time must be after start time');
+        return;
+      }
+
+      if (isOverlappingSlot(startDateTime, endDateTime)) {
+        setError(
+          t('mentor.schedule.overlapError') || 'This slot overlaps with an existing slot'
+        );
         return;
       }
 
@@ -85,7 +99,11 @@ export default function MentorSchedule({ mentorId, isMentor = false }: MentorSch
         endTime: endDateTime.toISOString(),
       });
 
-      setSlots([...slots, response]);
+      setSlots((prevSlots) =>
+        [...prevSlots, response].sort(
+          (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        )
+      );
       setIsDialogOpen(false);
       setSlotTitle('');
       setStartTime('09:00');

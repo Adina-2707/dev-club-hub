@@ -31,6 +31,20 @@ router.post('/', authenticateToken, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'End time must be after start time' });
     }
 
+    const overlappingSlot = await prisma.mentorSchedule.findFirst({
+      where: {
+        mentorId: req.user!.id,
+        AND: [
+          { startTime: { lt: end } },
+          { endTime: { gt: start } },
+        ],
+      },
+    });
+
+    if (overlappingSlot) {
+      return res.status(400).json({ error: 'Schedule slot overlaps with an existing slot' });
+    }
+
     const schedule = await prisma.mentorSchedule.create({
       data: {
         mentorId: req.user!.id,

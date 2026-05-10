@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -42,6 +43,12 @@ export function TimeSlotSelector({
     const totalMin = parseInt(hour) * 60 + parseInt(min);
     return totalMin > startTotalMin;
   });
+
+  useEffect(() => {
+    if (!validEndTimes.includes(endTime) && validEndTimes.length > 0) {
+      onEndTimeChange(validEndTimes[0]);
+    }
+  }, [endTime, validEndTimes, onEndTimeChange]);
 
   return (
     <div className="space-y-6">
