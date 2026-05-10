@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -45,12 +45,7 @@ export default function MentorSchedule({ mentorId, isMentor = false }: MentorSch
       return start < slotEnd && end > slotStart;
     });
 
-  // Fetch schedule slots
-  useEffect(() => {
-    fetchScheduleSlots();
-  }, [mentorId]);
-
-  const fetchScheduleSlots = async () => {
+  const fetchScheduleSlots = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -62,7 +57,12 @@ export default function MentorSchedule({ mentorId, isMentor = false }: MentorSch
     } finally {
       setLoading(false);
     }
-  };
+  }, [mentorId]);
+
+  // Fetch schedule slots
+  useEffect(() => {
+    fetchScheduleSlots();
+  }, [fetchScheduleSlots]);
 
   const handleAddSlot = async () => {
     if (!selectedDate || !startTime || !endTime) {

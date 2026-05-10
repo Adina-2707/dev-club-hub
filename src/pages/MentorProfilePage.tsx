@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Star, Plus, Book, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/RoleBadge';
@@ -38,16 +38,7 @@ export default function MentorProfilePage() {
   const myInternships = internships.filter(i => i.authorId === mentorId);
   const myBlogPosts = blogPosts.filter(b => b.authorId === mentorId);
 
-  useEffect(() => {
-    if (!mentorId) {
-      navigate('/');
-      return;
-    }
-    
-    fetchMentor();
-  }, [mentorId]);
-
-  const fetchMentor = async () => {
+  const fetchMentor = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -67,7 +58,16 @@ export default function MentorProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mentorId, t]);
+
+  useEffect(() => {
+    if (!mentorId) {
+      navigate('/');
+      return;
+    }
+    
+    fetchMentor();
+  }, [mentorId, fetchMentor, navigate]);
 
   const renderStars = (rating?: number) => {
     const ratingValue = rating || 0;

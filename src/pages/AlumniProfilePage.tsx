@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Github, Linkedin, ExternalLink, Code2, BookOpen, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +25,26 @@ export default function AlumniProfilePage() {
     (alumni?.github || alumni?.linkedin) || (alumni?.links && alumni.links.length > 0)
   );
 
+  const fetchAlumniData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch alumni profile
+      const alumniResponse = await apiService.getAlumniProfile(alumniId);
+      setAlumni(alumniResponse);
+
+      // Fetch alumni stories
+      const storiesResponse = await apiService.getAlumniStories(alumniId);
+      setStories(storiesResponse);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load alumni profile');
+      console.error('Error fetching alumni data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [alumniId]);
+
   useEffect(() => {
     if (!alumniId) {
       navigate('/');
@@ -32,29 +52,7 @@ export default function AlumniProfilePage() {
     }
 
     fetchAlumniData();
-  }, [alumniId]);
-
-  const fetchAlumniData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch alumni profile
-      const alumniResponse = await apiService.getAlumniProfile(alumniId);
-      const alumniData = alumniResponse.data || alumniResponse;
-      setAlumni(alumniData);
-
-      // Fetch alumni stories
-      const storiesResponse = await apiService.getAlumniStories(alumniId);
-      const storiesData = Array.isArray(storiesResponse) ? storiesResponse : storiesResponse.data || [];
-      setStories(storiesData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load alumni profile');
-      console.error('Error fetching alumni data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [alumniId, fetchAlumniData, navigate]);
 
   const renderSocialLinks = () => {
     if (!alumni) return null;

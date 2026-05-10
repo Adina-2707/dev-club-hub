@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Star, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,11 +33,7 @@ export function MentorReviewList({ mentorId, onReviewsLoaded }: MentorReviewList
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchReviews();
-  }, [mentorId]);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -51,7 +47,11 @@ export function MentorReviewList({ mentorId, onReviewsLoaded }: MentorReviewList
     } finally {
       setLoading(false);
     }
-  };
+  }, [mentorId, onReviewsLoaded]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
 
   const handleDeleteReview = async (reviewId: string) => {
     if (!window.confirm(t('reviews.confirmDelete') || 'Are you sure you want to delete this review?')) {
