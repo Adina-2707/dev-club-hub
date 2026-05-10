@@ -39,75 +39,80 @@ export default function ProfilePage() {
       </div>
 
       <div className="space-y-10">
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
-            <Code2 className="h-5 w-5 text-primary" /> {t("profile.myProjects")}
-          </h2>
+        {/* Projects Section - Only for Students */}
+        {user?.role === 'student' && (
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+              <Code2 className="h-5 w-5 text-primary" /> {t("profile.myProjects")}
+            </h2>
 
-          {myProjects.length === 0 ? (
-            <EmptyState title={t("profile.noProjects")} description={t("profile.createFirst")} />
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {myProjects.map((project) => (
-                <Card key={project.id} className="card-hover rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{project.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">{project.description}</p>
-                    <div className="flex items-center justify-between gap-3">
-                      <a href={project.githubLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium">
-                        <Github className="h-4 w-4" /> <span>{t("projects.title")}</span> <ExternalLink className="h-3 w-3" />
-                      </a>
-                      <span className="flex items-center gap-1 text-sm text-muted-foreground"><Heart className="h-3.5 w-3.5" /> {project.likes.length}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
-            <Briefcase className="h-5 w-5 text-primary" /> {t("profile.applications")}
-          </h2>
-
-          {myApplications.length === 0 ? (
-            <EmptyState title={t("profile.noApplications")} description={t("profile.noApplicationsDesc")} />
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {myApplications.map((application) => {
-                const internship = internships.find((item) => item.id === application.internshipId);
-                return (
-                  <Card key={application.id} className="card-hover rounded-2xl">
+            {myProjects.length === 0 ? (
+              <EmptyState title={t("profile.noProjects")} description={t("profile.createFirst")} />
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {myProjects.map((project) => (
+                  <Card key={project.id} className="card-hover rounded-2xl">
                     <CardHeader>
-                      <CardTitle className="text-lg">{internship?.title || t("profile.noApplications")}</CardTitle>
+                      <CardTitle className="text-lg">{project.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground mb-3">{application.message || t("profile.noMessage")}</p>
+                      <p className="text-sm text-muted-foreground mb-3">{project.description}</p>
                       <div className="flex items-center justify-between gap-3">
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          application.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                          application.status === "accepted" ? "bg-green-100 text-green-800" :
-                          "bg-red-100 text-red-800"
-                        }`}>
-                          {application.status === "pending" ? t("profile.pending") :
-                           application.status === "accepted" ? t("profile.accepted") :
-                           t("profile.rejected")}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{application.createdAt}</span>
+                        <a href={project.githubLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium">
+                          <Github className="h-4 w-4" /> <span>{t("projects.title")}</span> <ExternalLink className="h-3 w-3" />
+                        </a>
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground"><Heart className="h-3.5 w-3.5" /> {project.likes.length}</span>
                       </div>
                     </CardContent>
                   </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        {user?.role === 'mentor' && (
+        {/* Applications Section - Only for Students */}
+        {user?.role === 'student' && (
           <div>
+            <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+              <Briefcase className="h-5 w-5 text-primary" /> {t("profile.applications")}
+            </h2>
+
+            {myApplications.length === 0 ? (
+              <EmptyState title={t("profile.noApplications")} description={t("profile.noApplicationsDesc")} />
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {myApplications.map((application) => {
+                  const internship = internships.find((item) => item.id === application.internshipId);
+                  return (
+                    <Card key={application.id} className="card-hover rounded-2xl">
+                      <CardHeader>
+                        <CardTitle className="text-lg">{internship?.title || t("profile.noApplications")}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-3">{application.message || t("profile.noMessage")}</p>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            application.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                            application.status === "accepted" ? "bg-green-100 text-green-800" :
+                            "bg-red-100 text-red-800"
+                          }`}>
+                            {application.status === "pending" ? t("profile.pending") :
+                             application.status === "accepted" ? t("profile.accepted") :
+                             t("profile.rejected")}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{application.createdAt}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mentor Reviews - Only for Mentors */}
             <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
               <Star className="h-5 w-5 text-primary" /> {t("profile.mentorReviews")}
             </h2>
