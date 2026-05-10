@@ -5,6 +5,7 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/EmptyState";
 import { MentorReviewList } from "@/components/MentorReviewList";
+import MentorSchedule from "@/components/MentorSchedule";
 import { Navigate } from "react-router-dom";
 import { Code2, Briefcase, Github, Linkedin, ExternalLink, Heart, Star } from "lucide-react";
 
@@ -225,12 +226,21 @@ export default function ProfilePage() {
 
         {/* Mentor Reviews - Only for Mentors */}
         {user?.role === 'mentor' && (
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
-              <Star className="h-5 w-5 text-primary" /> {t("profile.mentorReviews")}
-            </h2>
-            <MentorReviewList mentorId={user.id} />
-          </div>
+          <>
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+                <Star className="h-5 w-5 text-primary" /> {t("profile.mentorReviews")}
+              </h2>
+              <MentorReviewList mentorId={user.id} />
+            </div>
+
+            <div className="mt-10">
+              <h2 className="text-xl font-bold mb-5">
+                {t('mentor.schedule.title') || 'Consultation Schedule'}
+              </h2>
+              <MentorSchedule mentorId={user.id} isMentor />
+            </div>
+          </>
         )}
       </div>
 
