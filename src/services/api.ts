@@ -121,7 +121,20 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || `HTTP ${response.status}`);
+      let errorMessage: unknown = errorData.error;
+
+      if (Array.isArray(errorMessage)) {
+        errorMessage = errorMessage.map((item) => {
+          if (typeof item === 'object' && item !== null && 'message' in item) {
+            return (item as { message: string }).message;
+          }
+          return String(item);
+        }).join('; ');
+      } else if (typeof errorMessage === 'object' && errorMessage !== null) {
+        errorMessage = JSON.stringify(errorMessage);
+      }
+
+      throw new Error(typeof errorMessage === 'string' && errorMessage ? errorMessage : `HTTP ${response.status}`);
     }
 
     return response.json();

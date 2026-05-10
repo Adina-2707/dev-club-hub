@@ -92,7 +92,14 @@ export default function ProjectsPage() {
                 )}
                 <Input placeholder={t("projects.titleField")} value={title} onChange={(e) => setTitle(e.target.value)} required className="h-11" />
                 <Textarea placeholder={t("projects.description")} value={description} onChange={(e) => setDescription(e.target.value)} required />
-                <Input placeholder={t("projects.githubLink")} value={githubLink} onChange={(e) => setGithubLink(e.target.value)} required className="h-11" />
+                <Input
+                  type="url"
+                  placeholder={t("projects.githubLink")}
+                  value={githubLink}
+                  onChange={(e) => setGithubLink(e.target.value)}
+                  required
+                  className="h-11"
+                />
                 <Button type="submit" disabled={createLoading} className="w-full gradient-btn text-primary-foreground border-0 h-11">
                   {createLoading ? (t("projects.creating") || 'Creating...') : (t("projects.createBtn") || 'Create')}
                 </Button>
