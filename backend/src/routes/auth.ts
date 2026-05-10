@@ -144,6 +144,11 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res) => {
         role: true,
         nickname: true,
         avatar: true,
+        bio: true,
+        expertise: true,
+        github: true,
+        linkedin: true,
+        rating: true,
         blocked: true,
       },
     });

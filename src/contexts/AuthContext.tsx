@@ -124,7 +124,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       const response = await apiService.updateUser(updates);
-      setUser((prev) => (prev ? { ...prev, ...response } : prev));
+      // API returns { user } object
+      const userData = response?.user || response;
+      setUser((prev) => (prev ? { ...prev, ...userData } : prev));
     } catch (err) {
       const message = err instanceof Error ? err.message : "Update failed";
       setError(message);

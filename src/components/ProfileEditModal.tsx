@@ -73,13 +73,13 @@ export function ProfileEditModal({ isOpen, onClose, onSuccess }: ProfileEditModa
         }
       });
 
-      const response = await apiService.updateUser(updates);
+      await apiService.updateUser(updates);
       
-      if (response && response.user) {
-        updateUser(response.user);
-        onSuccess();
-        onClose();
-      }
+      // Refresh user data from server to ensure all changes are saved
+      const currentUserResponse = await apiService.getCurrentUser();
+      updateUser(currentUserResponse);
+      onSuccess();
+      onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile');
       console.error('Error updating profile:', err);
