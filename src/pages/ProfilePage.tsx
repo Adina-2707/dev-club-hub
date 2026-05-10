@@ -9,7 +9,7 @@ import MentorSchedule from "@/components/MentorSchedule";
 import { ProfileEditModal } from "@/components/ProfileEditModal";
 import { Navigate } from "react-router-dom";
 import { useState } from "react";
-import { Code2, Briefcase, Github, Linkedin, ExternalLink, Heart, Star, Edit } from "lucide-react";
+import { Code2, Briefcase, Github, Linkedin, ExternalLink, Heart, Star, Edit, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
@@ -247,19 +247,20 @@ export default function ProfilePage() {
 
             <div className="mt-10">
               <h2 className="text-xl font-bold mb-5">
-      <ProfileEditModal 
-        isOpen={isEditModalOpen} 
-        onClose={() => setIsEditModalOpen(false)}
-        onSuccess={() => {
-          // Refresh page or update UI as needed
-        }}
-      />              </h2>
+                <Clock className="h-5 w-5 text-primary" /> {t("mentor.schedule") || 'Schedule'}
+              </h2>
               <MentorSchedule mentorId={user.id} isMentor />
             </div>
           </>
         )}
       </div>
 
+      {/* Profile Edit Modal */}
+      <ProfileEditModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => setIsEditModalOpen(false)}
+      />
     </div>
   );
 }
