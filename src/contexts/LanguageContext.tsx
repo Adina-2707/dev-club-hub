@@ -220,6 +220,8 @@ const translations = {
   "profile.mentorNotFound": { ru: "Ментор не найден", en: "Mentor not found" },
   "profile.averageRating": { ru: "Средняя оценка", en: "Average Rating" },
   "profile.mentorReviews": { ru: "Отзывы о менторе", en: "Mentor Reviews" },
+  "profile.about": { ru: "О себе", en: "About" },
+  "profile.socialLinks": { ru: "Социальные ссылки", en: "Social Links" },
 
   // Common
   "common.loading": { ru: "Загрузка...", en: "Loading..." },

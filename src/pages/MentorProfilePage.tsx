@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
-import { ArrowLeft, Star, Plus, Book, Briefcase } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Book, Briefcase, Github, Linkedin, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/RoleBadge';
 import { MentorReviewList } from '@/components/MentorReviewList';
@@ -149,6 +149,65 @@ export default function MentorProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* About Section */}
+      {(mentor?.bio || mentor?.expertise || mentor?.github || mentor?.linkedin) && (
+        <div className="mb-12 space-y-6">
+          {mentor?.bio && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                {t('profile.about') || 'About'}
+              </h3>
+              <p className="text-base text-foreground leading-relaxed">{mentor.bio}</p>
+            </div>
+          )}
+
+          {mentor?.expertise && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                {t('profile.expertise') || 'Expertise'}
+              </h3>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                {mentor.expertise}
+              </div>
+            </div>
+          )}
+
+          {(mentor?.github || mentor?.linkedin) && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                {t('profile.socialLinks') || 'Social Links'}
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {mentor?.github && (
+                  <a
+                    href={mentor.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+                  >
+                    <Github className="h-4 w-4" />
+                    GitHub
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                {mentor?.linkedin && (
+                  <a
+                    href={mentor.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                    LinkedIn
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2">

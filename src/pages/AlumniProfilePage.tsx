@@ -24,6 +24,15 @@ export default function AlumniProfilePage() {
   const hasSocialLinks = Boolean(
     (alumni?.github || alumni?.linkedin) || (alumni?.links && alumni.links.length > 0)
   );
+  const hasAdditionalLinks = Boolean(alumni?.links && alumni.links.length > 0);
+
+  const formatLinkLabel = (link: string) => {
+    try {
+      return new URL(link).hostname.replace(/^www\./, '');
+    } catch {
+      return link;
+    }
+  };
 
   const fetchAlumniData = useCallback(async () => {
     try {
@@ -97,7 +106,7 @@ export default function AlumniProfilePage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
           >
             <ExternalLink className="h-4 w-4" />
-            Portfolio
+            {formatLinkLabel(link)}
             <ExternalLink className="h-3 w-3" />
           </a>
         ))}
@@ -169,6 +178,27 @@ export default function AlumniProfilePage() {
               </p>
             )}
             {renderSocialLinks()}
+            {hasAdditionalLinks && alumni?.links && alumni.links.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                  {t('alumni.additionalLinks') || 'Additional Links'}
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {alumni.links.map((link, index) => (
+                    <a
+                      key={`additional-${index}`}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/10 hover:bg-secondary/20 text-secondary font-medium transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      {formatLinkLabel(link)}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

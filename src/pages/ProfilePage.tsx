@@ -29,6 +29,7 @@ export default function ProfilePage() {
   ].filter((item) => item.url);
   const alumniCustomLinks = (user?.links || []).filter(Boolean);
   const hasAlumniSocial = alumniSocialLinks.length > 0 || alumniCustomLinks.length > 0;
+  const hasAdditionalLinks = alumniCustomLinks.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-10 fade-in">
@@ -56,6 +57,92 @@ export default function ProfilePage() {
           {t('profile.editProfile') || 'Edit Profile'}
         </Button>
       </div>
+
+      {/* About Section */}
+      {(user?.bio || user?.expertise || user?.github || user?.linkedin || hasAdditionalLinks) && (
+        <div className="mb-12 space-y-6">
+          {user?.bio && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                {t('profile.about') || 'About'}
+              </h3>
+              <p className="text-base text-foreground leading-relaxed">{user.bio}</p>
+            </div>
+          )}
+
+          {user?.expertise && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                {t('profile.expertise') || 'Expertise'}
+              </h3>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-medium">
+                {user.expertise}
+              </div>
+            </div>
+          )}
+
+          {(user?.github || user?.linkedin || hasAdditionalLinks) && (
+            <div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">
+                {t('profile.socialLinks') || 'Social Links'}
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {user?.github && (
+                  <a
+                    href={user.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+                  >
+                    <Github className="h-4 w-4" />
+                    GitHub
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                {user?.linkedin && (
+                  <a
+                    href={user.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                    LinkedIn
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+                {alumniCustomLinks.map((link, index) => (
+                  <a
+                    key={`custom-${index}`}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/10 hover:bg-secondary/20 text-secondary font-medium transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    {link}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {user?.achievements && user.achievements.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+            <Star className="h-5 w-5 text-primary" /> {t('alumni.achievements') || 'Achievements'}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {user.achievements.map((achievement, index) => (
+              <div key={index} className="rounded-full border border-muted/50 bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+                {achievement}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-10">
         {user?.role === 'alumni' && (
@@ -97,26 +184,6 @@ export default function ProfilePage() {
                     </Card>
                   ))}
                 </div>
-              )}
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
-                <Star className="h-5 w-5 text-primary" /> {t('alumni.achievements') || 'Achievements'}
-              </h2>
-              {user?.achievements && user.achievements.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {user.achievements.map((achievement, index) => (
-                    <div key={index} className="rounded-full border border-muted/50 bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
-                      {achievement}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title={t('alumni.noAchievements') || 'No achievements yet'}
-                  description={t('alumni.noAchievementsDesc') || 'This alumni has not added achievements yet.'}
-                />
               )}
             </div>
 
