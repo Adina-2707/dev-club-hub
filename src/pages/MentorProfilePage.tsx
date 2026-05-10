@@ -1,15 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft, Star, Plus, Book, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/RoleBadge';
 import { MentorReviewList } from '@/components/MentorReviewList';
 import { ReviewForm } from '@/components/ReviewForm';
 import MentorSchedule from '@/components/MentorSchedule';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiService } from '@/services/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useData } from '@/contexts/DataContext';
 
 interface MentorUser {
   id: string;
@@ -26,11 +27,16 @@ export default function MentorProfilePage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { internships, blogPosts } = useData();
   const [mentor, setMentor] = useState<MentorUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const isMentor = user?.role === 'mentor' && user?.id === mentorId;
+
+  // Filter internships and blog posts for this mentor
+  const myInternships = internships.filter(i => i.authorId === mentorId);
+  const myBlogPosts = blogPosts.filter(b => b.authorId === mentorId);
 
   useEffect(() => {
     if (!mentorId) {
@@ -160,6 +166,79 @@ export default function MentorProfilePage() {
         <h2 className="text-2xl font-bold mb-6">{t('mentor.schedule.title') || 'Consultation Schedule'}</h2>
         <MentorSchedule mentorId={mentor.id} isMentor={isMentor} />
       </div>
+
+      {/* Internships Section - Only for Own Mentor */}
+      {isMentor && (
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Briefcase className="h-6 w-6" />
+              {t('profile.myInternships') || 'My Internships'}
+            </h2>
+            <Button onClick={() => navigate('/internships')}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('internships.create') || 'Create Internship'}
+            </Button>
+          </div>
+
+          {myInternships.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              <p>{t('profile.noInternships') || 'No internships yet'}</p>
+              <p className="text-sm mt-2">{t('profile.createFirstInternship') || 'Create your first internship!'}</p>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {myInternships.map((internship) => (
+                <Card key={internship.id} className="card-hover rounded-2xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{internship.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{internship.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Blog Posts Section - Only for Own Mentor */}
+      {isMentor && (
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Book className="h-6 w-6" />
+              {t('profile.myBlogPosts') || 'My Blog Posts'}
+            </h2>
+            <Button onClick={() => navigate('/blog')}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('blog.create') || 'Create Post'}
+            </Button>
+          </div>
+
+          {myBlogPosts.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              <p>{t('profile.noBlogPosts') || 'No blog posts yet'}</p>
+              <p className="text-sm mt-2">{t('profile.shareKnowledge') || 'Share your knowledge!'}</p>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {myBlogPosts.map((post) => (
+                <Card key={post.id} className="card-hover rounded-2xl">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{post.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-3">{post.content}</p>
+                    <p className="text-xs text-muted-foreground mt-3">{post.createdAt}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
