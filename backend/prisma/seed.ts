@@ -159,6 +159,19 @@ async function main() {
     },
   });
 
+  // Create sample alumni story
+  await prisma.alumniStory.upsert({
+    where: { id: 'as1' },
+    update: {},
+    create: {
+      id: 'as1',
+      alumniId: alumni.id,
+      title: 'Как я нашёл работу в продуктовой команде',
+      content: 'После окончания курса я подготовил портфолио, активно откликался на вакансии и участвовал в интенсивных технических интервью. Через месяц получил предложение от стартапа и теперь работаю над реальными продуктами.',
+      storyType: 'career',
+    },
+  });
+
   // Create sample comment
   await prisma.comment.upsert({
     where: { id: 'c1' },
