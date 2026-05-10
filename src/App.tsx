@@ -11,8 +11,10 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import ProjectPage from "./pages/ProjectPage";
 import TeamsPage from "./pages/TeamsPage";
 import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
 import InternshipsPage from "./pages/InternshipsPage";
 import ProfilePage from "./pages/ProfilePage";
 import MentorProfilePage from "./pages/MentorProfilePage";
@@ -38,8 +40,10 @@ const App = () => (
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/projects" element={<ProjectsPage />} />
+                    <Route path="/projects/:id" element={<ProjectPage />} />
                     <Route path="/teams" element={<TeamsPage />} />
                     <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/posts/:id" element={<BlogPostPage />} />
                     <Route path="/internships" element={<InternshipsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/mentor/:mentorId" element={<MentorProfilePage />} />

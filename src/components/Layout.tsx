@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useData } from "@/contexts/DataContext";
 import { RoleBadge } from "./RoleBadge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Menu, X, LogOut, User, Moon, Sun, Globe, Bell } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,6 +16,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang, t } = useLanguage();
   const { notifications, markNotificationAsRead, markAllNotificationsAsRead } = useData();
+  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -115,16 +117,42 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         {t("notifications.empty")}
                       </div>
                     ) : (
-                      userNotifications.slice(0, 10).map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
-                          onClick={() => markNotificationAsRead(notification.id)}
-                        >
-                          <p className="text-sm">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{notification.createdAt}</p>
-                        </div>
-                      ))
+                      userNotifications.slice(0, 10).map((notification) => {
+                        const targetRoute = notification.navigationRoute || "/";
+
+                        const handleNotificationClick = () => {
+                          markNotificationAsRead(notification.id);
+                          if (targetRoute) {
+                            navigate(targetRoute);
+                          } else {
+                            toast({
+                              title: "Notification target not found",
+                              description: "Redirected to home.",
+                              variant: "destructive",
+                            });
+                            navigate("/");
+                          }
+                        };
+
+                        return (
+                          <div
+                            key={notification.id}
+                            role="button"
+                            tabIndex={0}
+                            className={`p-3 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
+                            onClick={handleNotificationClick}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                handleNotificationClick();
+                              }
+                            }}
+                          >
+                            <p className="text-sm font-medium text-foreground">{notification.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{notification.createdAt}</p>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </PopoverContent>
@@ -132,15 +160,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             )}
 
             {isAuthenticated && user ? (
-              <div className="flex items-center gap-2.5 ml-1">
-                <Link to="/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                  <div className="h-8 w-8 rounded-full hero-gradient flex items-center justify-center overflow-hidden">
-                    {user.avatar ? (
-                      <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-bold text-primary-foreground">{user.name[0]}</span>
-                    )}
-                  </div>
+              <div className="flex items-center gap-2 ml-1">
+                <Link to="/profile" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-all">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold text-foreground">
+                    {user.name[0]}
+                  </span>
                   <span className="text-sm font-medium">{user.nickname || user.name}</span>
                   <RoleBadge role={user.role} />
                 </Link>

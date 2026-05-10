@@ -70,6 +70,7 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   relatedId?: string; // project id, application id, etc.
+  navigationRoute?: string; // e.g., "/projects/123", "/blog/456", "/profile"
 }
 
 interface DataContextType {
@@ -157,7 +158,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           type: "application_status",
           message: `Your internship application status has been updated to ${status}`,
           read: false,
-          relatedId: applicationId
+          relatedId: applicationId,
+          navigationRoute: "/profile"
         });
       }
       return app.id === applicationId ? { ...app, status } : app;
@@ -193,7 +195,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             type: "comment",
             message: `New comment on your project "${project.title}"`,
             read: false,
-            relatedId: c.targetId
+            relatedId: c.targetId,
+            navigationRoute: `/projects/${c.targetId}`
           });
         }
       } else if (c.targetType === "blog") {
@@ -204,7 +207,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             type: "comment",
             message: `New comment on your blog post "${blogPost.title}"`,
             read: false,
-            relatedId: c.targetId
+            relatedId: c.targetId,
+            navigationRoute: `/posts/${c.targetId}`
           });
         }
       }
@@ -225,7 +229,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           type: "like",
           message: `Your project "${p.title}" was liked`,
           read: false,
-          relatedId: projectId
+          relatedId: projectId,
+          navigationRoute: `/projects/${projectId}`
         });
       }
       return { ...p, likes: liked ? p.likes.filter((id) => id !== userId) : [...p.likes, userId] };
