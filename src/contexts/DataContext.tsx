@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface Project {
   id: string;
@@ -123,13 +123,55 @@ const sampleComments: Comment[] = [
 ];
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>(sampleProjects);
+  // Initialize projects from localStorage or use sample data
+  const [projects, setProjects] = useState<Project[]>(() => {
+    try {
+      const stored = localStorage.getItem('projects');
+      return stored ? JSON.parse(stored) : sampleProjects;
+    } catch {
+      return sampleProjects;
+    }
+  });
+
+  // Initialize comments from localStorage or use sample data
+  const [comments, setComments] = useState<Comment[]>(() => {
+    try {
+      const stored = localStorage.getItem('comments');
+      return stored ? JSON.parse(stored) : sampleComments;
+    } catch {
+      return sampleComments;
+    }
+  });
+
+  // Initialize notifications from localStorage
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    try {
+      const stored = localStorage.getItem('notifications');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [teams, setTeams] = useState<Team[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(sampleBlogPosts);
   const [internships, setInternships] = useState<Internship[]>(sampleInternships);
-  const [comments, setComments] = useState<Comment[]>(sampleComments);
   const [applications, setApplications] = useState<InternshipApplication[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Persist projects to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
+
+  // Persist comments to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('comments', JSON.stringify(comments));
+  }, [comments]);
+
+  // Persist notifications to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+  }, [notifications]);
 
   const addProject = (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) =>
     setProjects((prev) => [...prev, { ...p, id: `p${Date.now()}`, likes: [], bookmarks: [], createdAt: new Date().toISOString().split("T")[0] }]);
