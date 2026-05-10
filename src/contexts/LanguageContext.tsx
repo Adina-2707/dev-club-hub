@@ -36,7 +36,7 @@ const translations = {
   "landing.step3.desc": { ru: "Создавайте проекты, присоединяйтесь к командам.", en: "Create projects, join teams, and start collaborating." },
   "landing.readyToJoin": { ru: "Готовы присоединиться?", en: "Ready to Join?" },
   "landing.readyDesc": { ru: "Присоединяйтесь к Dev Club и начните создавать вместе с сообществом разработчиков.", en: "Join Dev Club and start building with a community of passionate developers." },
-  "landing.topProjects": { ru: "Популярные проекты", en: "Top Projects" },
+  "landing.topProjects": { ru: "🔥 Популярные проекты", en: "🔥 Top Projects" },
   "landing.topProjectsDesc": { ru: "Самые популярные проекты сообщества", en: "Most liked projects from the community" },
 
   // Login

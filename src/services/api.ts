@@ -1,4 +1,4 @@
-const rawApiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').trim();
+const rawApiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3002').trim();
 const baseUrl = rawApiBaseUrl.replace(/\/+$/, '');
 const API_BASE_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
 
@@ -371,3 +371,4 @@ class ApiService {
 }
 
 export const apiService = new ApiService();
+export const api = apiService;
