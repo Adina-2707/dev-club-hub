@@ -113,6 +113,8 @@ export default function ProfilePage() {
         )}
 
         {/* Mentor Reviews - Only for Mentors */}
+        {user?.role === 'mentor' && (
+          <div>
             <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
               <Star className="h-5 w-5 text-primary" /> {t("profile.mentorReviews")}
             </h2>
