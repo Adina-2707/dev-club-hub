@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -40,7 +41,8 @@ export default function AdminPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
   const [blockModalOpen, setBlockModalOpen] = useState(false);
-  const [blockReason, setBlockReason] = useState('');
+  const [blockReasonKey, setBlockReasonKey] = useState<'spam' | 'policy' | 'inactive' | 'other'>('policy');
+  const [blockCustomReason, setBlockCustomReason] = useState('');
   const [blockTarget, setBlockTarget] = useState<{ id: string; name: string } | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -174,17 +176,35 @@ export default function AdminPage() {
 
   const handleOpenBlock = (id: string, name: string) => {
     setBlockTarget({ id, name });
-    setBlockReason('');
+    setBlockReasonKey('policy');
+    setBlockCustomReason('');
     setBlockModalOpen(true);
+  };
+
+  const getBlockReasonText = () => {
+    switch (blockReasonKey) {
+      case 'spam':
+        return 'Спам / реклама';
+      case 'inactive':
+        return 'Длительная неактивность';
+      case 'other':
+        return blockCustomReason.trim();
+      case 'policy':
+      default:
+        return 'Нарушение правил';
+    }
   };
 
   const handleConfirmBlock = async () => {
     if (!blockTarget) return;
+    const finalReason = getBlockReasonText();
+    if (!finalReason) return;
+
     try {
-      await blockUserMutation.mutateAsync({ id: blockTarget.id, reason: blockReason.trim() });
+      await blockUserMutation.mutateAsync({ id: blockTarget.id, reason: finalReason });
       setBlockModalOpen(false);
       setBlockTarget(null);
-      setBlockReason('');
+      setBlockCustomReason('');
     } catch {
       // keep modal open to let admin retry or change reason
     }
@@ -353,16 +373,41 @@ export default function AdminPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4 px-4 pb-4">
-            <div className="space-y-2">
-              <Label htmlFor="block-reason">Причина блокировки</Label>
-              <Input
-                id="block-reason"
-                value={blockReason}
-                onChange={(e) => setBlockReason(e.target.value)}
-                placeholder="Например: нарушение правил, спам, недобросовестное поведение"
-                className="h-12"
-              />
+            <div className="space-y-3">
+              <Label>Выберите причину блокировки</Label>
+              <RadioGroup value={blockReasonKey} onValueChange={(value) => setBlockReasonKey(value as 'spam' | 'policy' | 'inactive' | 'other')}>
+                <div className="space-y-2 text-sm text-foreground">
+                  <label className="flex items-center gap-3 rounded-xl border px-4 py-3 hover:border-primary/70">
+                    <RadioGroupItem value="policy" />
+                    <span>Нарушение правил</span>
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border px-4 py-3 hover:border-primary/70">
+                    <RadioGroupItem value="spam" />
+                    <span>Спам / реклама</span>
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border px-4 py-3 hover:border-primary/70">
+                    <RadioGroupItem value="inactive" />
+                    <span>Длительная неактивность</span>
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border px-4 py-3 hover:border-primary/70">
+                    <RadioGroupItem value="other" />
+                    <span>Другая причина</span>
+                  </label>
+                </div>
+              </RadioGroup>
             </div>
+            {blockReasonKey === 'other' && (
+              <div className="space-y-2">
+                <Label htmlFor="block-custom-reason">Укажите причину</Label>
+                <Input
+                  id="block-custom-reason"
+                  value={blockCustomReason}
+                  onChange={(e) => setBlockCustomReason(e.target.value)}
+                  placeholder="Например: нерелевантное поведение"
+                  className="h-12"
+                />
+              </div>
+            )}
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel
@@ -374,7 +419,7 @@ export default function AdminPage() {
             >
               Отмена
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmBlock} disabled={!blockReason.trim()}>
+            <AlertDialogAction onClick={handleConfirmBlock} disabled={blockReasonKey === 'other' ? !blockCustomReason.trim() : false}>
               Заблокировать пользователя
             </AlertDialogAction>
           </AlertDialogFooter>
