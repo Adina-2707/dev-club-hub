@@ -19,6 +19,12 @@ export default function AlumniProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const hasProjects = alumni?.projects && alumni.projects.length > 0;
+  const hasAchievements = alumni?.achievements && alumni.achievements.length > 0;
+  const hasSocialLinks = Boolean(
+    (alumni?.github || alumni?.linkedin) || (alumni?.links && alumni.links.length > 0)
+  );
+
   useEffect(() => {
     if (!alumniId) {
       navigate('/');
@@ -167,6 +173,15 @@ export default function AlumniProfilePage() {
             {renderSocialLinks()}
           </div>
         </div>
+
+        {!hasProjects && stories.length === 0 && !hasAchievements && (
+          <div className="mb-8">
+            <EmptyState
+              title={t('alumni.emptyProfileTitle') || 'No profile content yet'}
+              description={t('alumni.emptyProfileDesc') || 'This alumni profile has no projects, achievements, or stories yet.'}
+            />
+          </div>
+        )}
 
         <div className="mt-8">
           <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
