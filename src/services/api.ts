@@ -167,6 +167,10 @@ class ApiService {
     return this.request<T>(endpoint, 'PUT', body);
   }
 
+  async patch<T = unknown>(endpoint: string, body?: Record<string, unknown>): Promise<T> {
+    return this.request<T>(endpoint, 'PATCH', body);
+  }
+
   async delete<T = unknown>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, 'DELETE');
   }
@@ -309,11 +313,11 @@ class ApiService {
   }
 
   async blockUser(id: string) {
-    return this.request(`/users/${id}/block`, 'PUT');
+    return this.patch(`/users/${id}/block`, { status: 'block' });
   }
 
   async unblockUser(id: string) {
-    return this.request(`/users/${id}/unblock`, 'PUT');
+    return this.patch(`/users/${id}/unblock`);
   }
 
   async getAdminComments() {

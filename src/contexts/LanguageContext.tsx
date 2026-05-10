@@ -93,6 +93,24 @@ const translations = {
   "comments.empty": { ru: "Пока нет комментариев", en: "No comments yet" },
   "projects.topProjects": { ru: "Популярные проекты", en: "Top Projects" },
 
+  // Alumni
+  "alumni.portfolio": { ru: "Портфолио", en: "Portfolio" },
+  "alumni.achievements": { ru: "Достижения", en: "Achievements" },
+  "alumni.stories": { ru: "Истории успеха", en: "Success Stories" },
+  "alumni.quickInfo": { ru: "Краткая информация", en: "Quick Info" },
+  "alumni.projects": { ru: "Проекты", en: "Projects" },
+  "alumni.storiesCount": { ru: "Историй", en: "Stories" },
+  "alumni.achievementsCount": { ru: "Достижения", en: "Achievements" },
+  "alumni.noAchievements": { ru: "Пока нет достижений", en: "No achievements yet" },
+  "alumni.noAchievementsDesc": { ru: "Этот выпускник ещё не добавил достижения.", en: "This alumni has not added achievements yet." },
+  "alumni.noPortfolio": { ru: "Пока нет проектов", en: "No projects yet" },
+  "alumni.noPortfolioDesc": { ru: "Этот выпускник ещё не добавил проекты.", en: "This alumni has not added any projects yet." },
+  "alumni.noStories": { ru: "Пока нет историй", en: "No stories yet" },
+  "alumni.noStoriesDesc": { ru: "Этот выпускник ещё не поделился историями.", en: "This alumni has not shared any stories yet." },
+  "alumni.noContent": { ru: "Нет контента", en: "No content yet" },
+  "alumni.noContentDesc": { ru: "Этот профиль выпускника пока не содержит проектов или историй.", en: "This alumni profile does not have any projects or stories yet." },
+  "alumni.noSocialLinks": { ru: "Нет ссылок", en: "No social links yet" },
+
   // Blog
   "blog.title": { ru: "Блог", en: "Blog" },
   "blog.subtitle": { ru: "Статьи от менторов", en: "Insights from mentors" },

@@ -13,9 +13,13 @@ router.get('/:id', async (req, res) => {
       select: {
         id: true,
         name: true,
+        email: true,
         role: true,
         avatar: true,
         bio: true,
+        expertise: true,
+        github: true,
+        linkedin: true,
         achievements: true,
         links: true,
         projects: {

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Github, Linkedin, ExternalLink, Code2, BookOpen } from 'lucide-react';
+import { ArrowLeft, Github, Linkedin, ExternalLink, Code2, BookOpen, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RoleBadge } from '@/components/RoleBadge';
@@ -56,27 +56,33 @@ export default function AlumniProfilePage() {
     const links = [
       { icon: Github, label: 'GitHub', url: alumni.github, key: 'github' },
       { icon: Linkedin, label: 'LinkedIn', url: alumni.linkedin, key: 'linkedin' },
-    ];
+    ].filter((item) => item.url);
 
-    const customLinks = alumni.links || [];
+    const customLinks = (alumni.links || []).filter(Boolean);
+
+    if (links.length === 0 && customLinks.length === 0) {
+      return (
+        <p className="text-sm text-muted-foreground">
+          {t('alumni.noSocialLinks') || 'No social links yet'}
+        </p>
+      );
+    }
 
     return (
       <div className="flex flex-wrap gap-3">
-        {links.map(({ icon: Icon, label, url, key }) =>
-          url ? (
-            <a
-              key={key}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          ) : null
-        )}
+        {links.map(({ icon: Icon, label, url, key }) => (
+          <a
+            key={key}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary font-medium transition-colors"
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        ))}
 
         {customLinks.map((link, index) => (
           <a
@@ -162,26 +168,31 @@ export default function AlumniProfilePage() {
           </div>
         </div>
 
-        {/* Achievements Section */}
-        {alumni.achievements && alumni.achievements.length > 0 && (
-          <div className="mt-8">
-            <Achievements 
-              achievements={alumni.achievements}
-              title={t('alumni.achievements') || 'Achievements'}
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
+            <Trophy className="h-6 w-6 text-yellow-500" />
+            {t('alumni.achievements') || 'Achievements'}
+          </h2>
+          {alumni.achievements && alumni.achievements.length > 0 ? (
+            <Achievements achievements={alumni.achievements} />
+          ) : (
+            <EmptyState
+              title={t('alumni.noAchievements') || 'No achievements yet'}
+              description={t('alumni.noAchievementsDesc') || 'This alumni has not added achievements yet.'}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="md:col-span-2 space-y-12">
           {/* Portfolio Projects */}
-          {alumni.projects && alumni.projects.length > 0 && (
-            <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-                <Code2 className="h-6 w-6 text-primary" />
-                {t('alumni.portfolio') || 'Portfolio'}
-              </h2>
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
+              <Code2 className="h-6 w-6 text-primary" />
+              {t('alumni.portfolio') || 'Portfolio'}
+            </h2>
+            {alumni.projects && alumni.projects.length > 0 ? (
               <div className="grid gap-4">
                 {alumni.projects.map((project) => (
                   <Card key={project.id} className="card-hover">
@@ -195,18 +206,23 @@ export default function AlumniProfilePage() {
                         className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
                       >
                         <Github className="h-4 w-4" />
-                        View on GitHub
+                        {t('projects.viewGithub') || 'View on GitHub'}
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <EmptyState
+                title={t('alumni.noPortfolio') || 'No projects yet'}
+                description={t('alumni.noPortfolioDesc') || 'This alumni has not added any projects yet.'}
+              />
+            )}
+          </div>
 
           {/* Alumni Stories */}
-          {stories.length > 0 && (
+          {stories.length > 0 ? (
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
                 <BookOpen className="h-6 w-6 text-primary" />
@@ -218,12 +234,10 @@ export default function AlumniProfilePage() {
                 ))}
               </div>
             </div>
-          )}
-
-          {(!alumni.projects || alumni.projects.length === 0) && stories.length === 0 && (
+          ) : (
             <EmptyState
-              title={t('alumni.noContent') || 'No content yet'}
-              description={t('alumni.noContentDesc') || 'This alumni profile does not have any projects or stories yet.'}
+              title={t('alumni.noStories') || 'No stories yet'}
+              description={t('alumni.noStoriesDesc') || 'This alumni has not shared any stories yet.'}
             />
           )}
         </div>
@@ -234,24 +248,18 @@ export default function AlumniProfilePage() {
             <CardContent className="pt-6">
               <h3 className="font-semibold mb-4">{t('alumni.quickInfo') || 'Quick Info'}</h3>
               <div className="space-y-3 text-sm">
-                {alumni.projects && alumni.projects.length > 0 && (
-                  <div className="flex justify-between items-center pb-3 border-b">
-                    <span className="text-muted-foreground">{t('alumni.projects') || 'Projects'}</span>
-                    <span className="font-semibold">{alumni.projects.length}</span>
-                  </div>
-                )}
-                {stories.length > 0 && (
-                  <div className="flex justify-between items-center pb-3 border-b">
-                    <span className="text-muted-foreground">{t('alumni.storiesCount') || 'Stories'}</span>
-                    <span className="font-semibold">{stories.length}</span>
-                  </div>
-                )}
-                {alumni.achievements && alumni.achievements.length > 0 && (
-                  <div className="flex justify-between items-center pb-3 border-b">
-                    <span className="text-muted-foreground">{t('alumni.achievementsCount') || 'Achievements'}</span>
-                    <span className="font-semibold">{alumni.achievements.length}</span>
-                  </div>
-                )}
+                <div className="flex justify-between items-center pb-3 border-b">
+                  <span className="text-muted-foreground">{t('alumni.projects') || 'Projects'}</span>
+                  <span className="font-semibold">{alumni.projects?.length ?? 0}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b">
+                  <span className="text-muted-foreground">{t('alumni.storiesCount') || 'Stories'}</span>
+                  <span className="font-semibold">{stories.length}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b">
+                  <span className="text-muted-foreground">{t('alumni.achievementsCount') || 'Achievements'}</span>
+                  <span className="font-semibold">{alumni.achievements?.length ?? 0}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
