@@ -154,6 +154,23 @@ class ApiService {
     return response;
   }
 
+  // Generic API methods
+  async get<T = unknown>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, 'GET');
+  }
+
+  async post<T = unknown>(endpoint: string, body?: Record<string, unknown>): Promise<T> {
+    return this.request<T>(endpoint, 'POST', body);
+  }
+
+  async put<T = unknown>(endpoint: string, body?: Record<string, unknown>): Promise<T> {
+    return this.request<T>(endpoint, 'PUT', body);
+  }
+
+  async delete<T = unknown>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, 'DELETE');
+  }
+
   async getCurrentUser() {
     return this.request('/auth/me', 'GET');
   }

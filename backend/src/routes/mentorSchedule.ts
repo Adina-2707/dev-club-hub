@@ -75,4 +75,31 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.delete('/:slotId', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const slotId = String(req.params.slotId);
+
+    const slot = await prisma.mentorSchedule.findUnique({
+      where: { id: slotId },
+    });
+
+    if (!slot) {
+      return res.status(404).json({ error: 'Schedule slot not found' });
+    }
+
+    if (slot.mentorId !== req.user!.id) {
+      return res.status(403).json({ error: 'You can only delete your own schedule slots' });
+    }
+
+    await prisma.mentorSchedule.delete({
+      where: { id: slotId },
+    });
+
+    res.json({ message: 'Schedule slot deleted successfully' });
+  } catch (error) {
+    console.error('Delete mentor schedule error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export { router as mentorScheduleRoutes };

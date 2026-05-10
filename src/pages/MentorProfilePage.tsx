@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/RoleBadge';
 import { MentorReviewList } from '@/components/MentorReviewList';
 import { ReviewForm } from '@/components/ReviewForm';
+import MentorSchedule from '@/components/MentorSchedule';
 import { Card } from '@/components/ui/card';
 import { apiService } from '@/services/api';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MentorUser {
   id: string;
@@ -23,9 +25,12 @@ export default function MentorProfilePage() {
   const { mentorId } = useParams<{ mentorId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [mentor, setMentor] = useState<MentorUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isMentor = user?.role === 'mentor' && user?.id === mentorId;
 
   useEffect(() => {
     if (!mentorId) {
@@ -148,6 +153,12 @@ export default function MentorProfilePage() {
         <div>
           <ReviewForm mentorId={mentor.id} onReviewSubmitted={fetchMentor} />
         </div>
+      </div>
+
+      {/* Mentor Schedule Section */}
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-6">{t('mentor.schedule.title') || 'Consultation Schedule'}</h2>
+        <MentorSchedule mentorId={mentor.id} isMentor={isMentor} />
       </div>
     </div>
   );

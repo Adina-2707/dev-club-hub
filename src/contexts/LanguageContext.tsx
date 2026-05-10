@@ -178,6 +178,32 @@ const translations = {
   "profile.editBlogPost": { ru: "Редактировать запись", en: "Edit Blog Post" },
   "profile.edit": { ru: "Редактировать", en: "Edit" },
   "profile.delete": { ru: "Удалить", en: "Delete" },
+  "profile.mentorNotFound": { ru: "Ментор не найден", en: "Mentor not found" },
+  "profile.averageRating": { ru: "Средняя оценка", en: "Average Rating" },
+  "profile.mentorReviews": { ru: "Отзывы о менторе", en: "Mentor Reviews" },
+
+  // Common
+  "common.loading": { ru: "Загрузка...", en: "Loading..." },
+  "common.cancel": { ru: "Отмена", en: "Cancel" },
+  "common.back": { ru: "Назад", en: "Back" },
+
+  // Mentor Schedule
+  "mentor.schedule.title": { ru: "График консультаций", en: "Consultation Schedule" },
+  "mentor.schedule.selectDate": { ru: "Выберите дату", en: "Select Date" },
+  "mentor.schedule.addSlot": { ru: "Добавить слот", en: "Add Time Slot" },
+  "mentor.schedule.availableSlots": { ru: "Доступные слоты", en: "Available Time Slots" },
+  "mentor.schedule.noSlots": { ru: "Нет доступных слотов на эту дату", en: "No available slots for this date" },
+  "mentor.schedule.addNewSlot": { ru: "Добавить новый слот консультации", en: "Add New Consultation Slot" },
+  "mentor.schedule.selectedDate": { ru: "Выбранная дата", en: "Selected Date" },
+  "mentor.schedule.slotTitle": { ru: "Название слота", en: "Slot Title" },
+  "mentor.schedule.create": { ru: "Создать слот", en: "Create Slot" },
+  "mentor.schedule.startTime": { ru: "Время начала", en: "Start Time" },
+  "mentor.schedule.endTime": { ru: "Время окончания", en: "End Time" },
+  "mentor.schedule.duration": { ru: "Длительность", en: "Duration" },
+  "mentor.schedule.noValidEndTime": { ru: "Нет доступных времён окончания", en: "No valid end times" },
+  "mentor.schedule.minutes": { ru: "минут", en: "minutes" },
+  "mentor.schedule.hour": { ru: "час", en: "hour" },
+  "mentor.schedule.hours": { ru: "часов", en: "hours" },
 
   // Access Denied
   "access.denied": { ru: "Доступ запрещён", en: "Access Denied" },
