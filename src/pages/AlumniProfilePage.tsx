@@ -21,10 +21,11 @@ export default function AlumniProfilePage() {
 
   const hasProjects = alumni?.projects && alumni.projects.length > 0;
   const hasAchievements = alumni?.achievements && alumni.achievements.length > 0;
+  const additionalLinks = (alumni?.links || []).filter(Boolean).filter((link) => !isDuplicateSocialLink(link));
   const hasSocialLinks = Boolean(
-    (alumni?.github || alumni?.linkedin) || (alumni?.links && alumni.links.length > 0)
+    (alumni?.github || alumni?.linkedin) || additionalLinks.length > 0
   );
-  const hasAdditionalLinks = Boolean(alumni?.links && alumni.links.length > 0);
+  const hasAdditionalLinks = additionalLinks.length > 0;
 
   const formatLinkLabel = (link: string) => {
     try {
@@ -32,6 +33,21 @@ export default function AlumniProfilePage() {
     } catch {
       return link;
     }
+  };
+
+  const normalizeLink = (link: string) => {
+    try {
+      const url = new URL(link);
+      return `${url.protocol}//${url.hostname}${url.pathname}`.replace(/\/$/, '');
+    } catch {
+      return link.trim().replace(/\/$/, '');
+    }
+  };
+
+  const isDuplicateSocialLink = (link: string) => {
+    const normalized = normalizeLink(link);
+    const socialUrls = [alumni?.github, alumni?.linkedin].filter(Boolean).map(normalizeLink);
+    return socialUrls.includes(normalized);
   };
 
   const fetchAlumniData = useCallback(async () => {
@@ -71,7 +87,7 @@ export default function AlumniProfilePage() {
       { icon: Linkedin, label: 'LinkedIn', url: alumni.linkedin, key: 'linkedin' },
     ].filter((item) => item.url);
 
-    const customLinks = (alumni.links || []).filter(Boolean);
+    const customLinks = (alumni.links || []).filter(Boolean).filter((link) => !isDuplicateSocialLink(link));
 
     if (links.length === 0 && customLinks.length === 0) {
       return (
@@ -178,13 +194,13 @@ export default function AlumniProfilePage() {
               </p>
             )}
             {renderSocialLinks()}
-            {hasAdditionalLinks && alumni?.links && alumni.links.length > 0 && (
+            {hasAdditionalLinks && (
               <div className="mt-4">
                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                   {t('alumni.additionalLinks') || 'Additional Links'}
                 </h3>
                 <div className="flex flex-wrap gap-3">
-                  {alumni.links.map((link, index) => (
+                  {additionalLinks.map((link, index) => (
                     <a
                       key={`additional-${index}`}
                       href={link}

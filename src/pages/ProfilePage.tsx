@@ -20,8 +20,8 @@ export default function ProfilePage() {
 
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
 
-  const myProjects = projects.filter((project) => project.authorId === user?.id || 'demo');
-  const myApplications = applications.filter((application) => application.studentId === user?.id || 'demo');
+  const myProjects = projects.filter((project) => project.authorId === user.id);
+  const myApplications = applications.filter((application) => application.studentId === user.id);
 
   const alumniSocialLinks = [
     { icon: Github, label: t('alumni.github') || 'GitHub', url: user?.github },
