@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { apiService } from "@/services/api";
 
 export interface Project {
@@ -134,7 +135,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [internships, setInternships] = useState<Internship[]>([]);
-  const [applications, setApplications] = useState<InternshipApplication[]>([]);
+  const [applications, setApplications] = useState<InternshipApplication[]>(() => {
+    try {
+      const stored = localStorage.getItem('applications');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const loadData = async () => {
@@ -158,6 +168,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setApplications([]);
+      setNotifications([]);
+      return;
+    }
+
+    const loadUserData = async () => {
+      try {
+        const [applicationsRes, notificationsRes] = await Promise.all([
+          apiService.getMyApplications(),
+          apiService.getNotifications(),
+        ]);
+
+        setApplications(applicationsRes);
+        setNotifications(notificationsRes);
+      } catch (error) {
+        console.error('Failed to load user-specific data:', error);
+      }
+    };
+
+    loadUserData();
+  }, [isAuthenticated]);
+
   // Persist comments to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('comments', JSON.stringify(comments));
@@ -167,6 +201,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('notifications', JSON.stringify(notifications));
   }, [notifications]);
+
+  // Persist applications to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('applications', JSON.stringify(applications));
+  }, [applications]);
 
   const addProject = async (p: Omit<Project, "id" | "createdAt" | "likes" | "bookmarks">) => {
     try {
@@ -221,8 +260,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const addInternshipApplication = (a: Omit<InternshipApplication, "id" | "createdAt">) =>
-    setApplications((prev) => [...prev, { ...a, id: `a${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+  const addInternshipApplication = async (a: Omit<InternshipApplication, "id" | "createdAt">) => {
+    try {
+      const application = await apiService.applyInternship(a);
+      setApplications((prev) => [...prev, application as InternshipApplication]);
+    } catch (error) {
+      console.error('Failed to apply for internship:', error);
+      throw error;
+    }
+  };
 
   const updateApplicationStatus = (applicationId: string, status: "pending" | "accepted" | "rejected") =>
     setApplications((prev) => prev.map((app) => {

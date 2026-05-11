@@ -20,6 +20,7 @@ export default function InternshipsPage() {
   const [applyOpen, setApplyOpen] = useState(false);
   const [selectedInternship, setSelectedInternship] = useState<string>("");
   const [applicationMessage, setApplicationMessage] = useState("");
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const canCreate = isAuthenticated && user?.role === "mentor";
 
@@ -37,17 +38,24 @@ export default function InternshipsPage() {
     setOpen(false);
   };
 
-  const handleApply = (e: React.FormEvent) => {
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !selectedInternship) return;
-    addInternshipApplication({
-      studentId: user.id,
-      internshipId: selectedInternship,
-      message: applicationMessage || undefined,
-      status: "pending"
-    });
-    setApplicationMessage("");
-    setApplyOpen(false);
+
+    try {
+      setApplyError(null);
+      await addInternshipApplication({
+        studentId: user.id,
+        internshipId: selectedInternship,
+        message: applicationMessage || undefined,
+        status: "pending"
+      });
+      setApplicationMessage("");
+      setApplyOpen(false);
+    } catch (error) {
+      console.error('Failed to apply for internship:', error);
+      setApplyError(t("internships.applyError") || "Failed to submit your application. Please try again.");
+    }
   };
 
   const hasApplied = (internshipId: string) => {
@@ -87,6 +95,11 @@ export default function InternshipsPage() {
         <DialogContent className="rounded-2xl">
           <DialogHeader><DialogTitle>{t("internships.respondTitle")}</DialogTitle></DialogHeader>
           <form onSubmit={handleApply} className="space-y-4">
+            {applyError && (
+              <div className="rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 p-3">
+                {applyError}
+              </div>
+            )}
             <Textarea
               placeholder={t("internships.message")}
               value={applicationMessage}

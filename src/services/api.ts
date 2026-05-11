@@ -340,11 +340,15 @@ class ApiService {
   }
 
   async applyInternship(data: Record<string, unknown>) {
-    return this.request('/internships/apply', 'POST', data);
+    return this.request('/applications', 'POST', data);
+  }
+
+  async getMyApplications() {
+    return this.request('/applications/my', 'GET');
   }
 
   async updateApplicationStatus(id: string, status: string) {
-    return this.request(`/internships/applications/${id}/status`, 'PUT', { status });
+    return this.request(`/applications/${id}`, 'PATCH', { status });
   }
 
   // Comments endpoints
