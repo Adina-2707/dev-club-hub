@@ -106,6 +106,38 @@ router.get('/my', authenticateToken, async (req: AuthRequest, res) => {
   }
 });
 
+// Get mentor's internship applications
+router.get('/mentor', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const authorId = req.user!.id;
+
+    const applications = await prisma.internshipApplication.findMany({
+      where: {
+        internship: {
+          authorId,
+        },
+      },
+      include: {
+        student: {
+          select: { id: true, name: true, email: true, avatar: true },
+        },
+        internship: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(applications);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Update application status
 router.patch('/:id', authenticateToken, async (req: AuthRequest, res) => {
   try {

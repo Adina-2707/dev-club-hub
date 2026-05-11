@@ -347,6 +347,10 @@ class ApiService {
     return this.request('/applications/my', 'GET');
   }
 
+  async getMentorApplications() {
+    return this.request('/applications/mentor', 'GET');
+  }
+
   async updateApplicationStatus(id: string, status: string) {
     return this.request(`/applications/${id}`, 'PATCH', { status });
   }

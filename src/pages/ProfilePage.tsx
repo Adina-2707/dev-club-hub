@@ -22,6 +22,8 @@ export default function ProfilePage() {
 
   const myProjects = projects.filter((project) => project.authorId === user.id);
   const myApplications = applications.filter((application) => application.studentId === user.id);
+  const myMentorInternships = internships.filter((internship) => internship.authorId === user.id);
+  const mentorApplications = applications;
 
   const alumniSocialLinks = [
     { icon: Github, label: t('alumni.github') || 'GitHub', url: user?.github },
@@ -261,48 +263,86 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Applications Section - Only for Students */}
-        {user?.role === 'student' && (
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
-              <Briefcase className="h-5 w-5 text-primary" /> {t("profile.applications")}
-            </h2>
+        {user?.role === 'mentor' && (
+          <>
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+                <Briefcase className="h-5 w-5 text-primary" /> {t('profile.myInternships') || 'My Internships'}
+              </h2>
 
-            {myApplications.length === 0 ? (
-              <EmptyState title={t("profile.noApplications")} description={t("profile.noApplicationsDesc")} />
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {myApplications.map((application) => {
-                  const internship = internships.find((item) => item.id === application.internshipId);
-                  return (
-                    <Card key={application.id} className="card-hover rounded-2xl">
+              {myMentorInternships.length === 0 ? (
+                <EmptyState title={t('profile.noInternships') || 'No internships yet'} description={t('profile.noInternshipsDesc') || 'Create a new internship listing to get applications.'} />
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {myMentorInternships.map((internship) => (
+                    <Card key={internship.id} className="card-hover rounded-2xl">
                       <CardHeader>
-                        <CardTitle className="text-lg">{internship?.title || t("profile.noApplications")}</CardTitle>
+                        <CardTitle className="text-lg">{internship.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-muted-foreground mb-3">{application.message || t("profile.noMessage")}</p>
-                        <div className="flex items-center justify-between gap-3">
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            application.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                            application.status === "accepted" ? "bg-green-100 text-green-800" :
-                            "bg-red-100 text-red-800"
-                          }`}>
-                            {application.status === "pending" ? t("profile.pending") :
-                             application.status === "accepted" ? t("profile.accepted") :
-                             t("profile.rejected")}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{application.createdAt}</span>
+                        <p className="text-sm text-muted-foreground mb-3">{internship.description}</p>
+                        <span className="text-xs text-muted-foreground">{internship.createdAt}</span>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-xl font-bold flex items-center gap-2 mb-5">
+                <Briefcase className="h-5 w-5 text-primary" /> {t('profile.applications')}
+              </h2>
+
+              {mentorApplications.length === 0 ? (
+                <EmptyState title={t('profile.noApplicationsMentor')} description={t('profile.noApplicationsMentor') || 'Пока нет заявок на ваши стажировки.'} />
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {mentorApplications.map((application) => (
+                    <Card key={application.id} className="card-hover rounded-2xl">
+                      <CardHeader>
+                        <CardTitle className="text-lg">{application.internship?.title || t('profile.noApplications')}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-3">{application.message || t('profile.noMessage')}</p>
+                        <p className="text-sm text-foreground font-medium mb-3">{application.student?.name || t('profile.student')}</p>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              application.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              application.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {application.status === 'pending' ? t('profile.pending') :
+                               application.status === 'accepted' ? t('profile.accepted') :
+                               t('profile.rejected')}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{application.createdAt}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {['pending', 'accepted', 'rejected'].map((status) => (
+                              <Button
+                                key={status}
+                                size="sm"
+                                variant={application.status === status ? 'secondary' : 'outline'}
+                                onClick={() => updateApplicationStatus(application.id, status as 'pending' | 'accepted' | 'rejected')}
+                                disabled={application.status === status}
+                              >
+                                {status === 'pending' ? t('profile.pending') : status === 'accepted' ? t('profile.accepted') : t('profile.rejected')}
+                              </Button>
+                            ))}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
-        {/* Mentor Reviews - Only for Mentors */}
+        {/* Applications Section - Only for Students */}
         {user?.role === 'mentor' && (
           <>
             <div>

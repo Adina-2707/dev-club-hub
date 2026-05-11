@@ -52,6 +52,16 @@ export interface InternshipApplication {
   message?: string;
   status: "pending" | "accepted" | "rejected";
   createdAt: string;
+  student?: {
+    id: string;
+    name: string;
+    avatar?: string;
+  };
+  internship?: {
+    id: string;
+    title: string;
+    description?: string;
+  };
 }
 
 export interface Comment {
@@ -94,8 +104,8 @@ interface DataContextType {
   addInternship: (i: Omit<Internship, "id" | "createdAt">) => void;
   updateInternship: (id: string, updates: Partial<Pick<Internship, "title" | "description">>) => void;
   deleteInternship: (id: string) => void;
-  addInternshipApplication: (a: Omit<InternshipApplication, "id" | "createdAt">) => void;
-  updateApplicationStatus: (applicationId: string, status: "pending" | "accepted" | "rejected") => void;
+  addInternshipApplication: (a: Omit<InternshipApplication, "id" | "createdAt">) => Promise<void>;
+  updateApplicationStatus: (applicationId: string, status: "pending" | "accepted" | "rejected") => Promise<void>;
   addComment: (c: Omit<Comment, "id" | "createdAt">) => void;
   deleteComment: (id: string) => void;
   toggleLike: (projectId: string, userId: string) => void;
@@ -131,6 +141,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       return [];
     }
   });
+
+  const enhanceNotificationRoute = (notification: Notification) => {
+    if (notification.navigationRoute) return notification;
+
+    if (notification.type === "application" || notification.type === "application_status") {
+      return { ...notification, navigationRoute: "/profile" };
+    }
+
+    return notification;
+  };
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -177,13 +197,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const loadUserData = async () => {
       try {
+        const fetchApplications = user?.role === "mentor" ? apiService.getMentorApplications() : apiService.getMyApplications();
         const [applicationsRes, notificationsRes] = await Promise.all([
-          apiService.getMyApplications(),
+          fetchApplications,
           apiService.getNotifications(),
         ]);
 
-        setApplications(applicationsRes);
-        setNotifications(notificationsRes);
+        setApplications(applicationsRes as InternshipApplication[]);
+        setNotifications((notificationsRes as Notification[]).map(enhanceNotificationRoute));
       } catch (error) {
         console.error('Failed to load user-specific data:', error);
       }
@@ -270,21 +291,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateApplicationStatus = (applicationId: string, status: "pending" | "accepted" | "rejected") =>
-    setApplications((prev) => prev.map((app) => {
-      if (app.id === applicationId && app.status !== status) {
-        // Add notification to student
-        addNotification({
-          userId: app.studentId,
-          type: "application_status",
-          message: `Your internship application status has been updated to ${status}`,
-          read: false,
-          relatedId: applicationId,
-          navigationRoute: "/profile"
-        });
-      }
-      return app.id === applicationId ? { ...app, status } : app;
-    }));
+  const updateApplicationStatus = async (applicationId: string, status: "pending" | "accepted" | "rejected") => {
+    try {
+      const updatedApplication = await apiService.updateApplicationStatus(applicationId, status);
+      setApplications((prev) => prev.map((app) => (app.id === applicationId ? { ...(app as InternshipApplication), ...(updatedApplication as InternshipApplication) } : app)));
+    } catch (error) {
+      console.error('Failed to update application status:', error);
+      throw error;
+    }
+  };
 
   const addBlogPost = async (b: Omit<BlogPost, "id" | "createdAt">) => {
     try {
@@ -377,7 +392,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }));
 
   const addNotification = (n: Omit<Notification, "id" | "createdAt">) =>
-    setNotifications((prev) => [...prev, { ...n, id: `n${Date.now()}`, createdAt: new Date().toISOString().split("T")[0] }]);
+    setNotifications((prev) => [...prev, {
+      ...n,
+      id: `n${Date.now()}`,
+      createdAt: new Date().toISOString().split("T")[0],
+      navigationRoute: n.navigationRoute || (n.type === "application" || n.type === "application_status" ? "/profile" : undefined),
+    }] );
 
   const markNotificationAsRead = (id: string) =>
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
