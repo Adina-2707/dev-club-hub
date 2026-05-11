@@ -23,7 +23,7 @@ export default function ProfilePage() {
   const myProjects = projects.filter((project) => project.authorId === user.id);
   const myApplications = applications.filter((application) => application.studentId === user.id);
   const myMentorInternships = internships.filter((internship) => internship.authorId === user.id);
-  const mentorApplications = applications;
+  const mentorApplications = applications.filter((application) => application.internship?.authorId === user.id);
 
   const alumniSocialLinks = [
     { icon: Github, label: t('alumni.github') || 'GitHub', url: user?.github },
