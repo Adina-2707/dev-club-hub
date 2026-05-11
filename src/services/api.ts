@@ -78,6 +78,24 @@ export interface AlumniProfile extends User {
   stories?: AlumniStory[];
 }
 
+export interface MentorRequestParticipant {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
+export interface MentorRequest {
+  id: string;
+  studentId: string;
+  mentorId: string;
+  message?: string | null;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+  student?: MentorRequestParticipant;
+  mentor?: MentorRequestParticipant;
+}
+
 class ApiService {
   private token: string | null = localStorage.getItem('token');
 
@@ -198,6 +216,23 @@ class ApiService {
 
   async updateUser(updates: Record<string, unknown>) {
     return this.request('/auth/me', 'PUT', updates);
+  }
+
+  async createMentorRequest(mentorId: string, message?: string) {
+    return this.request<MentorRequest>('/mentor-requests', 'POST', {
+      mentorId,
+      message,
+    });
+  }
+
+  async getMyMentorRequests() {
+    return this.request<MentorRequest[]>('/mentor-requests/my', 'GET');
+  }
+
+  async updateMentorRequestStatus(id: string, status: 'accepted' | 'rejected') {
+    return this.request<MentorRequest>(`/mentor-requests/${id}`, 'PATCH', {
+      status,
+    });
   }
 
   // Projects endpoints

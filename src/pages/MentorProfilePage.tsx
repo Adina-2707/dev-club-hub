@@ -7,10 +7,14 @@ import { MentorReviewList } from '@/components/MentorReviewList';
 import { ReviewForm } from '@/components/ReviewForm';
 import MentorSchedule from '@/components/MentorSchedule';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiService } from '@/services/api';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { apiService, MentorRequest } from '@/services/api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface MentorUser {
   id: string;
@@ -31,6 +35,13 @@ export default function MentorProfilePage() {
   const [mentor, setMentor] = useState<MentorUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
+  const [requestMessage, setRequestMessage] = useState('');
+  const [requestSending, setRequestSending] = useState(false);
+  const [mentorRequests, setMentorRequests] = useState<MentorRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestsError, setRequestsError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const isMentor = user?.role === 'mentor' && user?.id === mentorId;
 
@@ -60,6 +71,25 @@ export default function MentorProfilePage() {
     }
   }, [mentorId, t]);
 
+  const loadMentorRequests = useCallback(async () => {
+    if (!mentorId || !isMentor) {
+      return;
+    }
+
+    try {
+      setRequestsLoading(true);
+      setRequestsError(null);
+      const response = await apiService.getMyMentorRequests();
+      const requests = Array.isArray(response) ? response : response.data || [];
+      setMentorRequests(requests.filter((item) => item.mentorId === mentorId));
+    } catch (err) {
+      setRequestsError(err instanceof Error ? err.message : 'Failed to load mentorship requests');
+      console.error('Error fetching mentor requests:', err);
+    } finally {
+      setRequestsLoading(false);
+    }
+  }, [mentorId, isMentor]);
+
   useEffect(() => {
     if (!mentorId) {
       navigate('/');
@@ -68,6 +98,56 @@ export default function MentorProfilePage() {
     
     fetchMentor();
   }, [mentorId, fetchMentor, navigate]);
+
+  useEffect(() => {
+    if (isMentor) {
+      loadMentorRequests();
+    }
+  }, [isMentor, loadMentorRequests]);
+
+  const handleSubmitMentorRequest = async () => {
+    if (!mentor) {
+      return;
+    }
+
+    try {
+      setRequestSending(true);
+      await apiService.createMentorRequest(mentor.id, requestMessage.trim() || undefined);
+      setIsRequestDialogOpen(false);
+      setRequestMessage('');
+      toast({
+        title: 'Mentorship request sent',
+        description: 'Your request has been delivered to the mentor.',
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to send mentorship request';
+      toast({
+        title: 'Request failed',
+        description: message,
+      });
+      console.error('Error sending mentor request:', err);
+    } finally {
+      setRequestSending(false);
+    }
+  };
+
+  const handleUpdateRequestStatus = async (requestId: string, status: 'accepted' | 'rejected') => {
+    try {
+      const updated = await apiService.updateMentorRequestStatus(requestId, status);
+      setMentorRequests((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      toast({
+        title: `Request ${status}`,
+        description: `Mentorship request ${status}.`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to update request status';
+      toast({
+        title: 'Update failed',
+        description: message,
+      });
+      console.error('Error updating request status:', err);
+    }
+  };
 
   const renderStars = (rating?: number) => {
     const ratingValue = rating || 0;
@@ -149,6 +229,100 @@ export default function MentorProfilePage() {
           </div>
         </div>
       </div>
+
+      {user?.role === 'student' && !isMentor && (
+        <div className="mb-10">
+          <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="mb-4">{t('mentor.requestMentorship') || 'Request Mentorship'}</Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>{t('mentor.requestMentorship') || 'Request Mentorship'}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {t('mentor.requestDescription') || 'Send a mentorship request and let the mentor know what you need help with.'}
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="mentor-request-message">{t('mentor.requestMessage') || 'Request Message'}</Label>
+                  <Textarea
+                    id="mentor-request-message"
+                    value={requestMessage}
+                    onChange={(event) => setRequestMessage(event.target.value)}
+                    placeholder={t('mentor.requestPlaceholder') || 'Tell the mentor what you need help with...'}
+                    rows={5}
+                  />
+                </div>
+              </div>
+              <DialogFooter className="mt-4 justify-end gap-2">
+                <Button variant="secondary" type="button" onClick={() => setIsRequestDialogOpen(false)}>
+                  {t('common.cancel') || 'Cancel'}
+                </Button>
+                <Button type="button" onClick={handleSubmitMentorRequest} disabled={requestSending}>
+                  {requestSending ? (t('common.sending') || 'Sending...') : (t('mentor.sendRequest') || 'Send Request')}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+
+      {isMentor && (
+        <div className="mb-12 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">{t('mentor.requestsTitle') || 'Mentorship Requests'}</h2>
+            <Button variant="secondary" size="sm" onClick={loadMentorRequests}>
+              {t('common.refresh') || 'Refresh'}
+            </Button>
+          </div>
+          {requestsLoading ? (
+            <Card className="p-6 text-center text-muted-foreground">{t('common.loading') || 'Loading...'}</Card>
+          ) : requestsError ? (
+            <Card className="p-6 text-center text-red-700">{requestsError}</Card>
+          ) : mentorRequests.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">
+              {t('mentor.noRequests') || 'No mentorship requests yet.'}
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {mentorRequests.map((request) => (
+                <Card key={request.id} className="rounded-2xl">
+                  <CardContent className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-xl font-semibold text-primary">
+                        {request.student?.name?.[0] || 'S'}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-base font-semibold">{request.student?.name || 'Student'}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(request.createdAt).toLocaleString()}</p>
+                          </div>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${request.status === 'pending' ? 'bg-amber-100 text-amber-700' : request.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            {request.status}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm text-foreground">{request.message || (t('mentor.noRequestMessage') || 'No message provided')}</p>
+                      </div>
+                    </div>
+                    {request.status === 'pending' && (
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" onClick={() => handleUpdateRequestStatus(request.id, 'accepted')}>
+                          {t('mentor.accept') || 'Accept'}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleUpdateRequestStatus(request.id, 'rejected')}>
+                          {t('mentor.reject') || 'Reject'}
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* About Section */}
       {(mentor?.bio || mentor?.expertise || mentor?.github || mentor?.linkedin) && (
