@@ -102,4 +102,46 @@ router.get('/:mentorId', async (req, res) => {
   }
 });
 
+// Delete a review
+router.delete('/:id', authenticateToken, async (req: AuthRequest, res) => {
+  try {
+    const reviewId = String(req.params.id);
+    const userId = req.user!.id;
+
+    const review = await prisma.mentorReview.findUnique({
+      where: { id: reviewId },
+      select: { userId: true, mentorId: true },
+    });
+
+    if (!review) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+
+    if (review.userId !== userId && req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized to delete this review' });
+    }
+
+    await prisma.mentorReview.delete({
+      where: { id: reviewId },
+    });
+
+    const aggregate = await prisma.mentorReview.aggregate({
+      where: { mentorId: review.mentorId },
+      _avg: { rating: true },
+    });
+
+    const averageRating = aggregate._avg.rating ?? 0;
+
+    await prisma.user.update({
+      where: { id: review.mentorId },
+      data: { rating: averageRating },
+    });
+
+    res.json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Delete mentor review error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export { router as mentorReviewRoutes };
